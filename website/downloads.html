@@ -1,0 +1,161 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Downloads — WinSync</title>
+<meta name="description" content="Download WinSync — every release, pulled live from GitHub.">
+<link rel="icon" href="/favicon.ico">
+<link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+
+<header class="site">
+  <div class="wrap">
+    <a class="brand" href="/">
+      <img src="/icon.png" alt="">
+      WinSync
+    </a>
+    <nav class="main">
+      <a href="/">Home</a>
+      <a href="/downloads" class="active">Downloads</a>
+      <a href="https://github.com/ashfaknawshad/winsync">GitHub</a>
+    </nav>
+  </div>
+</header>
+
+<div class="page-header">
+  <h1>Downloads</h1>
+  <p>Every release, pulled live from GitHub. Not sure which file? See the
+    <a href="#downloads-help">install guide</a> below.</p>
+</div>
+
+<div class="releases" id="releases">
+  <p class="state-msg" id="state">Loading releases…</p>
+</div>
+
+<section class="block" id="downloads-help" style="padding-top:0;">
+  <h2>Which file do I want?</h2>
+  <div class="grid">
+    <div class="card">
+      <h3>WinSync-Setup.msi</h3>
+      <p>Recommended. A proper installer — Start Menu shortcut, clean
+        uninstall from Settings → Apps, no admin rights needed. Tiny (~700KB)
+        because it uses the .NET runtime already on your machine; if you
+        don't have it, WinSync will prompt you to grab it on first launch.</p>
+    </div>
+    <div class="card">
+      <h3>WinSync.exe</h3>
+      <p>Portable. One self-contained file (~70MB) with the .NET runtime
+        bundled in. Nothing to install, nothing to uninstall — just delete
+        the file when you're done with it.</p>
+    </div>
+  </div>
+</section>
+
+<footer class="site">
+  <p>
+    WinSync is free and open source under the
+    <a href="https://github.com/ashfaknawshad/winsync/blob/main/LICENSE">MIT License</a>.
+    &middot;
+    <a href="https://github.com/ashfaknawshad/winsync">Source on GitHub</a>
+  </p>
+</footer>
+
+<script>
+(function () {
+  const REPO = "ashfaknawshad/winsync";
+  const container = document.getElementById("releases");
+  const state = document.getElementById("state");
+
+  function formatBytes(bytes) {
+    if (bytes < 1024) return bytes + " B";
+    const units = ["KB", "MB", "GB"];
+    let v = bytes / 1024, i = 0;
+    while (v >= 1024 && i < units.length - 1) { v /= 1024; i++; }
+    return v.toFixed(v < 10 ? 1 : 0) + " " + units[i];
+  }
+
+  function formatDate(iso) {
+    const d = new Date(iso);
+    return d.toLocaleDateString(undefined, { year: "numeric", month: "long", day: "numeric" });
+  }
+
+  function assetIcon(name) {
+    if (name.endsWith(".msi")) return "📦";
+    if (name.endsWith(".exe")) return "🗔";
+    return "📄";
+  }
+
+  fetch("https://api.github.com/repos/" + REPO + "/releases")
+    .then(function (r) {
+      if (!r.ok) throw new Error("GitHub API returned " + r.status);
+      return r.json();
+    })
+    .then(function (releases) {
+      if (!Array.isArray(releases) || releases.length === 0) {
+        state.textContent = "No releases yet.";
+        return;
+      }
+
+      container.innerHTML = "";
+      releases.forEach(function (rel, idx) {
+        const box = document.createElement("div");
+        box.className = "release";
+
+        const head = document.createElement("div");
+        head.className = "release-head";
+
+        const title = document.createElement("h3");
+        title.textContent = rel.name || rel.tag_name;
+        if (idx === 0) {
+          const badge = document.createElement("span");
+          badge.className = "badge";
+          badge.textContent = "LATEST";
+          title.appendChild(badge);
+        }
+
+        const date = document.createElement("span");
+        date.className = "release-date";
+        date.textContent = formatDate(rel.published_at);
+
+        head.appendChild(title);
+        head.appendChild(date);
+        box.appendChild(head);
+
+        const assets = document.createElement("div");
+        assets.className = "assets";
+
+        (rel.assets || []).forEach(function (asset) {
+          const row = document.createElement("div");
+          row.className = "asset-row";
+          row.innerHTML =
+            '<span><span class="name">' + assetIcon(asset.name) + " " + asset.name + '</span> ' +
+            '<span class="meta">— ' + formatBytes(asset.size) + "</span></span>" +
+            '<a class="dl" href="' + asset.browser_download_url + '">Download</a>';
+          assets.appendChild(row);
+        });
+
+        if (!rel.assets || rel.assets.length === 0) {
+          const none = document.createElement("p");
+          none.className = "meta";
+          none.style.color = "var(--text-secondary)";
+          none.style.fontSize = "13px";
+          none.textContent = "No binaries attached to this release.";
+          assets.appendChild(none);
+        }
+
+        box.appendChild(assets);
+        container.appendChild(box);
+      });
+    })
+    .catch(function (err) {
+      state.innerHTML =
+        "Couldn't load releases from GitHub (" + err.message + "). " +
+        '<a href="https://github.com/' + REPO + '/releases">View releases on GitHub instead →</a>';
+    });
+})();
+</script>
+
+</body>
+</html>

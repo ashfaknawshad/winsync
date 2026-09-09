@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>WinSync — dual headphone audio for Windows</title>
+<meta name="description" content="Play the same system audio through two headphones on Windows, in sync — any mix of wired, Bluetooth and USB. No driver, no admin rights.">
+<link rel="icon" href="/favicon.ico">
+<link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+
+<header class="site">
+  <div class="wrap">
+    <a class="brand" href="/">
+      <img src="/icon.png" alt="">
+      WinSync
+    </a>
+    <nav class="main">
+      <a href="/" class="active">Home</a>
+      <a href="/downloads">Downloads</a>
+      <a href="https://github.com/ashfaknawshad/winsync">GitHub</a>
+    </nav>
+  </div>
+</header>
+
+<section class="hero">
+  <img class="icon" src="/icon.png" alt="WinSync icon">
+  <h1>Two headphones. One video. Perfectly in sync.</h1>
+  <p class="tagline">
+    WinSync mirrors your Windows system audio to a second output device —
+    wired, Bluetooth, or USB — with per-device delay and drift correction,
+    so nothing goes stale or drifts apart over a two-hour movie.
+  </p>
+  <div class="cta-row">
+    <a class="btn btn-primary" href="https://github.com/ashfaknawshad/winsync/releases/latest/download/WinSync-Setup.msi">
+      ⬇ Download for Windows
+    </a>
+    <a class="btn btn-secondary" href="/downloads">All downloads</a>
+  </div>
+  <p class="subnote">Windows 10/11 · MSI installer, ~700KB · free &amp; open source</p>
+</section>
+
+<div class="screenshot">
+  <img src="/screenshot.png" alt="WinSync application window showing tap device selection and two output rows with delay and volume sliders">
+</div>
+
+<section class="block">
+  <h2>Why WinSync exists</h2>
+  <p class="lede">
+    Windows routes system audio to one output at a time. There's no built-in
+    way for two people to share one laptop through two pairs of headphones —
+    until now.
+  </p>
+  <div class="grid">
+    <div class="card">
+      <span class="emoji">🎧</span>
+      <h3>Any mix of devices</h3>
+      <p>Wired + Bluetooth is the common case, but any two WASAPI output devices work.</p>
+    </div>
+    <div class="card">
+      <span class="emoji">⏱️</span>
+      <h3>Per-device delay</h3>
+      <p>Bluetooth adds 150–250ms of latency. A slider lets you compensate exactly.</p>
+    </div>
+    <div class="card">
+      <span class="emoji">🌊</span>
+      <h3>Drift correction</h3>
+      <p>Two devices never share a clock. A continuous ±0.3% speed nudge keeps them locked for hours, with no clicks.</p>
+    </div>
+    <div class="card">
+      <span class="emoji">🔓</span>
+      <h3>No driver, no admin</h3>
+      <p>Pure user-mode WASAPI loopback. No kernel driver, no code-signing certificate, no elevation prompt.</p>
+    </div>
+  </div>
+</section>
+
+<section class="block">
+  <h2>How it works</h2>
+  <p class="lede">Tap one endpoint with WASAPI loopback capture, re-render the stream to any number of others.</p>
+  <div class="diagram">Tap endpoint ──(WASAPI loopback capture)──▶ ring buffer
+                                              ├─▶ delay / gain ─▶ WASAPI render → Output 1
+                                              └─▶ delay / gain ─▶ WASAPI render → Output 2</div>
+  <p class="lede" style="margin-top:24px;">
+    The key trick: loopback capture happens <em>inside</em> the Windows audio
+    engine, before the signal reaches the Bluetooth radio — so the captured
+    copy is never delayed by Bluetooth. Tap the slowest device, delay the
+    faster one to catch up.
+    <a href="https://github.com/ashfaknawshad/winsync#how-it-works">Read the full design writeup →</a>
+  </p>
+</section>
+
+<section class="block">
+  <h2>Get started</h2>
+  <p class="lede">Wired + Bluetooth setup, the most common case:</p>
+  <pre><code>1. Connect both headphones.
+2. Set the Bluetooth headphone as the Windows default output.
+3. In WinSync, set Tap device to that same Bluetooth headphone.
+4. Set Output 1 to the wired headphone.
+5. Press Start, play a video, drag Delay until they line up (usually 120–250ms).</code></pre>
+  <p class="lede">Full instructions, known limitations and troubleshooting are in the <a href="https://github.com/ashfaknawshad/winsync#readme">README</a>.</p>
+</section>
+
+<footer class="site">
+  <p>
+    WinSync is free and open source under the
+    <a href="https://github.com/ashfaknawshad/winsync/blob/main/LICENSE">MIT License</a>.
+    &middot;
+    <a href="https://github.com/ashfaknawshad/winsync">Source on GitHub</a>
+    &middot;
+    <a href="https://github.com/ashfaknawshad/winsync/issues">Report an issue</a>
+  </p>
+</footer>
+
+</body>
+</html>

@@ -6,11 +6,13 @@
 
 **Play the same system audio through two headphones on Windows — perfectly in sync.**
 
-Any mix of wired, Bluetooth and USB. No driver. No admin rights. No installer.
+Any mix of wired, Bluetooth and USB. No driver. No admin rights.
 
 [![.NET 8](https://img.shields.io/badge/.NET-8.0-512BD4?logo=dotnet)](https://dotnet.microsoft.com/)
 [![Platform](https://img.shields.io/badge/platform-Windows%2010%2F11-0078D6?logo=windows)](#)
 [![License: MIT](https://img.shields.io/badge/license-MIT-green)](LICENSE)
+
+**[winsync.ashfaknawshad.dev](https://winsync.ashfaknawshad.dev)**
 
 <img src="Assets/screenshot.png" width="560" alt="WinSync app window" />
 
