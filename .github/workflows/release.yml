@@ -11,6 +11,9 @@ on:
     tags: ["v*"]
   workflow_dispatch: {}
 
+permissions:
+  contents: write # needed for softprops/action-gh-release to create/update the release
+
 jobs:
   build:
     runs-on: windows-latest
