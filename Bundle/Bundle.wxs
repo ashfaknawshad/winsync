@@ -32,14 +32,15 @@
   -->
   <Bundle Name="WinSync"
           Manufacturer="Ashfak Nawshad"
-          Version="1.0.4.0"
+          Version="1.0.5.0"
           UpgradeCode="d286c4a0-1bc6-4336-be79-0698b63b20ea"
           IconSourceFile="..\Assets\winsync.ico">
 
     <BootstrapperApplication>
       <bal:WixStandardBootstrapperApplication
           LicenseFile="..\Installer\License.rtf"
-          Theme="rtfLicense" />
+          Theme="rtfLicense"
+          LaunchTarget="[LocalAppDataFolder]WinSync\WinSync.exe" />
     </BootstrapperApplication>
 
     <netfx:DotNetCoreSearch RuntimeType="desktop" Platform="x64" MajorVersion="8"

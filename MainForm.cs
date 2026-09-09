@@ -61,6 +61,8 @@ namespace WinSync
         private readonly Label lblTitle = new Label { Text = "WinSync", Font = Theme.Sans(18f, FontStyle.Bold), ForeColor = Theme.TextPrimary, AutoSize = true };
         private readonly Label lblSubtitle = new Label { Text = "Mirror your system audio to two headphones, perfectly in sync.", Font = Theme.Sans(9f), ForeColor = Theme.TextSecondary, AutoSize = true };
 
+        private readonly MacButton btnCheckUpdate = new MacButton { Text = "Check for Updates", Primary = false, Width = 150, Height = 26 };
+
         private readonly Card sourceCard = new Card { Size = new Size(584, 108) };
         private readonly Label lblSourceCaption = new Label { Text = "TAP DEVICE", Font = Theme.Sans(9f, FontStyle.Bold), ForeColor = Theme.TextSecondary, AutoSize = true };
         private readonly Label lblSourceHint = new Label { Text = "Pick your slowest device (usually Bluetooth) and set it as the Windows default output.", Font = Theme.Sans(9f), ForeColor = Theme.TextSecondary, AutoSize = false, Width = 480, Height = 32 };
@@ -110,6 +112,7 @@ namespace WinSync
             appIcon.Location = new Point(18, 18);
             lblTitle.Location = new Point(68, 18);
             lblSubtitle.Location = new Point(68, 50);
+            btnCheckUpdate.Location = new Point(452, 26);
 
             sourceCard.Location = new Point(18, 78);
             lblSourceCaption.Location = new Point(18, 16);
@@ -125,8 +128,9 @@ namespace WinSync
             lblHint.Location = new Point(174, 572);
             lblHint.Text = "Play a video, then drag Delay until the two headphones line up.";
 
-            Controls.AddRange(new Control[] { appIcon, lblTitle, lblSubtitle, sourceCard, row1, row2, btnStart, lblHint });
+            Controls.AddRange(new Control[] { appIcon, lblTitle, lblSubtitle, btnCheckUpdate, sourceCard, row1, row2, btnStart, lblHint });
 
+            btnCheckUpdate.Click += (s, e) => _ = CheckForUpdatesAsync(manual: true);
             btnRefresh.Click += (s, e) => LoadDevices();
             btnStart.Click += (s, e) => Toggle();
             row1.Delay.ValueChanged += (s, e) => PushDelay(0, row1.Delay.Value);
@@ -187,13 +191,41 @@ namespace WinSync
             Close();
         }
 
-        private async Task CheckForUpdatesAsync()
+        /// <param name="manual">True when triggered by the "Check for Updates" button —
+        /// shows feedback either way (up to date / check failed), unlike the silent
+        /// startup check, which only ever speaks up when there's actually an update.</param>
+        private async Task CheckForUpdatesAsync(bool manual = false)
         {
-            var info = await UpdateChecker.CheckForUpdateAsync();
-            if (info == null) return;
+            if (manual)
+            {
+                btnCheckUpdate.Enabled = false;
+                btnCheckUpdate.Text = "Checking…";
+            }
+
+            var result = await UpdateChecker.CheckForUpdateAsync();
             if (IsDisposed || !IsHandleCreated) return;
 
-            BeginInvoke(new Action(() => new UpdateToast(info).ShowNear(this)));
+            BeginInvoke(new Action(() =>
+            {
+                if (manual)
+                {
+                    btnCheckUpdate.Enabled = true;
+                    btnCheckUpdate.Text = "Check for Updates";
+                }
+
+                if (result.Update != null)
+                {
+                    new UpdateToast(result.Update, beforeExit: () => mirror.Stop()).ShowNear(this);
+                }
+                else if (manual)
+                {
+                    string msg = result.Success
+                        ? "You're on the latest version of WinSync."
+                        : "Couldn't check for updates — check your internet connection and try again.";
+                    MessageBox.Show(this, msg, "WinSync", MessageBoxButtons.OK,
+                        result.Success ? MessageBoxIcon.Information : MessageBoxIcon.Warning);
+                }
+            }));
         }
 
         private void LoadDevices()
