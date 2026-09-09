@@ -57,7 +57,9 @@
       <ComponentRef Id="MainExecutable" />
     </Feature>
 
-    <ui:WixUI Id="WixUI_Minimal" />
+    <!-- WixUI_InstallDir adds the "choose install folder" page, browsing/editing INSTALLFOLDER. -->
+    <Property Id="WIXUI_INSTALLDIR" Value="INSTALLFOLDER" />
+    <ui:WixUI Id="WixUI_InstallDir" />
     <WixVariable Id="WixUILicenseRtf" Value="License.rtf" />
 
   </Package>

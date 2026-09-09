@@ -73,6 +73,10 @@ namespace WinSync
         private readonly OutputRow row2 = new OutputRow("Output 2");
         private readonly Timer uiTimer = new Timer { Interval = 400 };
 
+        private readonly NotifyIcon trayIcon = new NotifyIcon();
+        private readonly ContextMenuStrip trayMenu = new ContextMenuStrip();
+        private bool trayHintShown;
+
         private List<MMDevice> devices = new List<MMDevice>();
         private readonly AudioMirror mirror = new AudioMirror();
 
@@ -93,6 +97,14 @@ namespace WinSync
 
             try { Icon = Icon.ExtractAssociatedIcon(Application.ExecutablePath); } catch { /* dev run without exe icon */ }
             try { appIcon.Image = Icon?.ToBitmap(); } catch { }
+
+            trayMenu.Items.Add("Open WinSync", null, (s, e) => RestoreFromTray());
+            trayMenu.Items.Add(new ToolStripSeparator());
+            trayMenu.Items.Add("Exit", null, (s, e) => ExitFromTray());
+            trayIcon.Text = "WinSync";
+            trayIcon.Icon = Icon;
+            trayIcon.ContextMenuStrip = trayMenu;
+            trayIcon.DoubleClick += (s, e) => RestoreFromTray();
 
             appIcon.Location = new Point(18, 18);
             lblTitle.Location = new Point(68, 18);
@@ -131,7 +143,46 @@ namespace WinSync
             uiTimer.Start();
 
             LoadDevices();
-            FormClosing += (s, e) => mirror.Dispose();
+
+            Resize += (s, e) =>
+            {
+                if (WindowState == FormWindowState.Minimized) MinimizeToTray();
+            };
+
+            FormClosing += (s, e) =>
+            {
+                trayIcon.Visible = false;
+                mirror.Dispose();
+            };
+        }
+
+        private void MinimizeToTray()
+        {
+            Hide();
+            ShowInTaskbar = false;
+            trayIcon.Visible = true;
+
+            if (!trayHintShown)
+            {
+                trayHintShown = true;
+                trayIcon.ShowBalloonTip(2000, "WinSync",
+                    "Still running — mirroring continues in the background.", ToolTipIcon.Info);
+            }
+        }
+
+        private void RestoreFromTray()
+        {
+            trayIcon.Visible = false;
+            ShowInTaskbar = true;
+            Show();
+            WindowState = FormWindowState.Normal;
+            Activate();
+        }
+
+        private void ExitFromTray()
+        {
+            trayIcon.Visible = false;
+            Close();
         }
 
         private void LoadDevices()
