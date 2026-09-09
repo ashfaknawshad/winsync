@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs"
+     xmlns:bal="http://wixtoolset.org/schemas/v4/wxs/bal"
+     xmlns:netfx="http://wixtoolset.org/schemas/v4/wxs/netfx">
+
+  <!--
+    Bootstrapper (WinSync-Setup.exe). Checks whether the .NET 8 Desktop
+    Runtime (x64) is already installed before running the MSI:
+      - present (increasingly common)  -> nothing downloaded, chains
+        straight to the MSI
+      - missing                        -> downloads ONLY the runtime
+        installer (~56MB) from Microsoft's own permanent, versioned URL,
+        installs it silently, then installs WinSync
+
+    This is what replaces the "please go download .NET yourself" prompt
+    non-technical users used to hit when running the plain MSI directly.
+    That MSI is still published separately for anyone who wants a smaller
+    download and already knows they have the runtime, or wants the
+    install-location / shortcut checkboxes this bootstrapper doesn't expose
+    (it installs with the same defaults the MSI itself defaults to: both
+    shortcuts, standard per-user location).
+
+    The runtime URL+hash below are pinned to a specific patch (8.0.31) from
+    Microsoft's permanent builds.dotnet.microsoft.com host, not an
+    "evergreen" aka.ms redirect — evergreen URLs change content over time,
+    which would silently break Burn's hash verification on this exact file.
+    Any 8.0.x runtime satisfies the DetectCondition below, so this pinned
+    version only matters for machines with nothing installed yet; bump it
+    periodically (see SIGNING.md-style rationale: check
+    https://raw.githubusercontent.com/dotnet/core/main/release-notes/8.0/releases.json
+    for the current release, re-download, and recompute the SHA512).
+  -->
+  <Bundle Name="WinSync"
+          Manufacturer="Ashfak Nawshad"
+          Version="1.0.2.0"
+          UpgradeCode="d286c4a0-1bc6-4336-be79-0698b63b20ea"
+          IconSourceFile="..\Assets\winsync.ico">
+
+    <BootstrapperApplication>
+      <bal:WixStandardBootstrapperApplication
+          LicenseFile="..\Installer\License.rtf"
+          Theme="rtfLicense" />
+    </BootstrapperApplication>
+
+    <netfx:DotNetCoreSearch RuntimeType="desktop" Platform="x64" MajorVersion="8"
+                             Variable="WinSyncDesktopRuntimeVersion" />
+
+    <Chain>
+      <!--
+        DetectCondition alone tells Burn whether the package is already
+        present (affects execute: Install vs None) but does NOT stop it from
+        proactively caching — i.e. downloading — a package whose requested
+        state defaults to Present for an Install action, regardless of
+        current detect state. Confirmed by an actual run: with only
+        DetectCondition set, the log showed "execute: None" (correctly not
+        reinstalling) yet still downloaded the full 56MB payload anyway.
+        InstallCondition is what controls the requested state itself — with
+        it false (runtime already present), the package is requested Absent
+        and Burn skips acquiring it entirely. Re-verified after adding this:
+        zero network activity for the runtime package when already present.
+      -->
+      <ExePackage Id="DotNetDesktopRuntime8"
+                  DisplayName=".NET 8.0 Desktop Runtime (x64)"
+                  InstallArguments="/install /quiet /norestart"
+                  RepairArguments="/repair /quiet /norestart"
+                  UninstallArguments="/uninstall /quiet /norestart"
+                  Permanent="yes"
+                  Vital="yes"
+                  DetectCondition="WinSyncDesktopRuntimeVersion &gt;= v8.0.0"
+                  InstallCondition="NOT (WinSyncDesktopRuntimeVersion &gt;= v8.0.0)">
+        <ExePackagePayload
+            Name="windowsdesktop-runtime-8.0.31-win-x64.exe"
+            ProductName="Microsoft Windows Desktop Runtime - 8.0.31 (x64)"
+            Description=".NET 8.0 Windows Desktop Runtime (x64)"
+            Hash="605189223cf0a64bfb5453520b794d1d386a97c7e65e3944feaf9214db1a8b247f66c569265aef4204447baf5b5ff19559c323d887e1318f17deb28a5af0fa12"
+            Size="58715896"
+            Version="8.0.31.0"
+            DownloadUrl="https://builds.dotnet.microsoft.com/dotnet/WindowsDesktop/8.0.31/windowsdesktop-runtime-8.0.31-win-x64.exe" />
+      </ExePackage>
+
+      <MsiPackage Id="WinSyncMsi"
+                  SourceFile="..\Installer\bin\x64\Release\WinSync-Setup.msi"
+                  Vital="yes" />
+    </Chain>
+  </Bundle>
+</Wix>

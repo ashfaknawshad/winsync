@@ -46,11 +46,19 @@
   <h2>Which file do I want?</h2>
   <div class="grid">
     <div class="card">
+      <h3>WinSync-Setup.exe</h3>
+      <p>Recommended. Checks for the .NET 8 Desktop Runtime and installs it
+        automatically — silently, and only if it's actually missing — then
+        installs WinSync. Start Menu/desktop shortcuts, clean uninstall from
+        Settings → Apps, no admin rights needed. The one to use if you don't
+        want to think about any of this.</p>
+    </div>
+    <div class="card">
       <h3>WinSync-Setup.msi</h3>
-      <p>Recommended. A proper installer — Start Menu shortcut, clean
-        uninstall from Settings → Apps, no admin rights needed. Tiny (~700KB)
-        because it uses the .NET runtime already on your machine; if you
-        don't have it, WinSync will prompt you to grab it on first launch.</p>
+      <p>The same installer without the runtime check. Tiny (~700KB) because
+        it relies on the .NET runtime already being on your machine — if it's
+        not, you'll need to grab it yourself. Good if you already know you
+        have it, or for scripted/silent installs.</p>
     </div>
     <div class="card">
       <h3>WinSync.exe</h3>
@@ -117,6 +125,7 @@
   }
 
   function assetIcon(name) {
+    if (name === "WinSync-Setup.exe") return "⭐";
     if (name.endsWith(".msi")) return "📦";
     if (name.endsWith(".exe")) return "🗔";
     return "📄";

@@ -38,11 +38,15 @@ jobs:
       - name: Build MSI
         run: dotnet build Installer -c Release
 
+      - name: Build bootstrapper (chains the .NET 8 Desktop Runtime if missing)
+        run: dotnet build Bundle -c Release
+
       - name: Stage unsigned artifacts
         run: |
           mkdir dist
           copy bin\publish\portable-win-x64\WinSync.exe dist\WinSync.exe
           copy Installer\bin\x64\Release\WinSync-Setup.msi dist\WinSync-Setup.msi
+          copy Bundle\bin\x64\Release\WinSync-Setup.exe dist\WinSync-Setup.exe
         shell: cmd
 
       - id: check-secrets

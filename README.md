@@ -64,13 +64,19 @@ math — see [`Dual-Audio-Report.md`](Dual-Audio-Report.md).
 
 ## Install
 
-Grab the latest release from [Releases](../../releases). Two options:
+Grab the latest release from [Releases](../../releases). Three options:
 
-- **`WinSync-Setup.msi`** (recommended, ~700KB) — a proper per-user installer:
-  Start Menu shortcut, clean uninstall via Settings → Apps, no admin rights
-  needed. Requires the [.NET 8 Desktop Runtime](https://dotnet.microsoft.com/download/dotnet/8.0)
-  — if it's missing, WinSync's own launcher will prompt you to install it the
-  first time you run it.
+- **`WinSync-Setup.exe`** (recommended, ~2MB download) — a bootstrapper that
+  checks for the [.NET 8 Desktop Runtime](https://dotnet.microsoft.com/download/dotnet/8.0)
+  and installs it automatically, silently, only if it's actually missing
+  (~56MB, straight from Microsoft — most people already have it and won't
+  download anything extra), then installs WinSync. This is the one to hand to
+  someone who isn't going to troubleshoot a runtime prompt themselves.
+- **`WinSync-Setup.msi`** (~700KB) — the same per-user installer, without the
+  runtime bootstrapper wrapped around it. Same Start Menu/desktop shortcut
+  checkboxes, clean uninstall via Settings → Apps, no admin rights needed —
+  but if the runtime is missing, you'll need to grab it yourself. Good if you
+  already know you have the runtime, or for scripted/silent installs.
 - **`WinSync.exe`** (~70MB) — a single portable, self-contained file with the
   .NET runtime bundled in. No install, no prerequisites, just run it.
 
@@ -103,6 +109,21 @@ dotnet build Installer -c Release
 
 The MSI lands in `Installer\bin\x64\Release\WinSync-Setup.msi` (built with the
 [WiX Toolset](https://wixtoolset.org/) v5).
+
+### Build the bootstrapper
+
+Build the MSI first (above), then:
+
+```
+dotnet build Bundle -c Release
+```
+
+Lands in `Bundle\bin\x64\Release\WinSync-Setup.exe`. It chains the .NET 8
+Desktop Runtime installer from Microsoft's own servers, downloading it only
+if a runtime check (`netfx:DotNetCoreSearch`, from `WixToolset.Netfx.wixext`)
+comes back empty — see the comments in
+[`Bundle/Bundle.wxs`](Bundle/Bundle.wxs) for why that needs both a
+`DetectCondition` and an `InstallCondition`, not just one.
 
 ## Usage
 
