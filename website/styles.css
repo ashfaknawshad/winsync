@@ -194,6 +194,42 @@ section.block p.lede {
 .card .emoji { font-size: 24px; display: block; margin-bottom: 10px; }
 
 /* how-it-works diagram box */
+/* SmartScreen bypass steps */
+.steps {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 24px;
+  max-width: 720px;
+  margin: 0 auto 8px;
+}
+.step {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  overflow: hidden;
+}
+.step img {
+  display: block;
+  width: 100%;
+  border-bottom: 1px solid var(--border);
+}
+.step .step-body { padding: 16px 18px; }
+.step .step-num {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 999px;
+  background: var(--accent);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 700;
+  margin-right: 8px;
+}
+.step h4 { display: inline; font-size: 15px; margin: 0; }
+.step p { margin: 8px 0 0; color: var(--text-secondary); font-size: 13.5px; }
+
 .diagram {
   background: var(--bg-subtle);
   border: 1px solid var(--border);
