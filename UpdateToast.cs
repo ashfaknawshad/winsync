@@ -25,7 +25,7 @@ namespace WinSync
             var title = new Label
             {
                 Text = "Update available",
-                Font = Theme.Sans(11f, FontStyle.Bold),
+                Font = Theme.Sans(12f, FontStyle.Bold),
                 ForeColor = Theme.TextPrimary,
                 Location = new Point(18, 16),
                 AutoSize = true

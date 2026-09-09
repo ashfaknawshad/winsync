@@ -1,22 +1,24 @@
 using System;
+using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Windows.Forms;
 
 namespace WinSync
 {
-    /// <summary>Shared palette + helpers for the macOS-inspired light theme.</summary>
+    /// <summary>Shared palette + helpers for the dark theme: flat blue accent, no gradients.</summary>
     public static class Theme
     {
-        public static readonly Color WindowBg = Color.FromArgb(246, 246, 248);
-        public static readonly Color CardBg = Color.White;
-        public static readonly Color CardBorder = Color.FromArgb(226, 226, 230);
-        public static readonly Color Accent = Color.FromArgb(0, 122, 255);
-        public static readonly Color AccentPressed = Color.FromArgb(0, 99, 214);
-        public static readonly Color TextPrimary = Color.FromArgb(29, 29, 31);
-        public static readonly Color TextSecondary = Color.FromArgb(134, 134, 139);
-        public static readonly Color TrackOff = Color.FromArgb(40, 120, 120, 128);
-        public static readonly Color Danger = Color.FromArgb(255, 59, 48);
+        public static readonly Color WindowBg = Color.FromArgb(18, 18, 20);
+        public static readonly Color CardBg = Color.FromArgb(28, 28, 31);
+        public static readonly Color CardBorder = Color.FromArgb(45, 45, 49);
+        public static readonly Color Accent = Color.FromArgb(10, 132, 255);
+        public static readonly Color AccentPressed = Color.FromArgb(8, 108, 212);
+        public static readonly Color TextPrimary = Color.FromArgb(240, 240, 242);
+        public static readonly Color TextSecondary = Color.FromArgb(150, 150, 156);
+        public static readonly Color TrackOff = Color.FromArgb(255, 60, 60, 64);
+        public static readonly Color ControlBg = Color.FromArgb(38, 38, 42);
+        public static readonly Color Danger = Color.FromArgb(255, 69, 58);
 
         private static Font baseFont;
         public static Font Sans(float size, FontStyle style = FontStyle.Regular)
@@ -96,7 +98,7 @@ namespace WinSync
                       ControlStyles.SupportsTransparentBackColor, true);
             BackColor = Color.Transparent;
             Cursor = Cursors.Hand;
-            Font = Theme.Sans(9.5f, FontStyle.Bold);
+            Font = Theme.Sans(10f, FontStyle.Bold);
             Height = 36;
             Width = 120;
         }
@@ -122,7 +124,7 @@ namespace WinSync
             }
             else
             {
-                fill = pressed ? Color.FromArgb(230, 230, 235) : (hover ? Color.FromArgb(240, 240, 244) : Theme.CardBg);
+                fill = pressed ? Color.FromArgb(50, 50, 55) : (hover ? Color.FromArgb(44, 44, 48) : Theme.ControlBg);
                 text = Theme.TextPrimary;
             }
 
@@ -171,11 +173,8 @@ namespace WinSync
             g.SmoothingMode = SmoothingMode.AntiAlias;
             var rect = new RectangleF(0, 0, Width - 1, Height - 1);
 
-            Color track = isChecked ? Theme.Accent : Color.FromArgb(120, 120, 128);
-            if (!isChecked) track = Color.FromArgb(60, track.R, track.G, track.B);
-
             using (var path = Theme.RoundedRect(rect, Height / 2f))
-            using (var b = new SolidBrush(isChecked ? Theme.Accent : Color.FromArgb(233, 233, 235)))
+            using (var b = new SolidBrush(isChecked ? Theme.Accent : Theme.ControlBg))
             {
                 g.FillPath(b, path);
             }
@@ -263,7 +262,7 @@ namespace WinSync
 
             var full = new RectangleF(TrackX0, midY - 2, TrackX1 - TrackX0, 4);
             using (var path = Theme.RoundedRect(full, 2))
-            using (var b = new SolidBrush(Color.FromArgb(45, 120, 120, 128)))
+            using (var b = new SolidBrush(Theme.TrackOff))
                 g.FillPath(b, path);
 
             var filled = new RectangleF(TrackX0, midY - 2, Math.Max(0, thumbX - TrackX0), 4);
@@ -280,16 +279,208 @@ namespace WinSync
         }
     }
 
-    /// <summary>Flat-styled combo box matching the light card theme.</summary>
-    public class MacComboBox : ComboBox
+    /// <summary>
+    /// Fully custom-drawn dropdown selector. Not a ComboBox subclass: stock
+    /// WinForms ComboBox draws its own border via native control chrome that
+    /// ignores BackColor/ForeColor even with FlatStyle.Flat — it always shows
+    /// up as a light system-colored edge, which reads badly on a dark theme.
+    /// Drawing everything ourselves (box, chevron, and the dropdown list) is
+    /// the only way to keep it dark end to end.
+    /// </summary>
+    public class MacComboBox : Control
     {
+        public sealed class ItemCollection
+        {
+            private readonly List<object> items = new List<object>();
+            private readonly MacComboBox owner;
+            internal ItemCollection(MacComboBox owner) { this.owner = owner; }
+            public int Count => items.Count;
+            public object this[int index] => items[index];
+            public void Clear() { items.Clear(); owner.SelectedIndex = -1; owner.Invalidate(); }
+            public void AddRange(object[] values) { items.AddRange(values); owner.Invalidate(); }
+            public void Add(object value) { items.Add(value); owner.Invalidate(); }
+            public bool Contains(object value) => items.Contains(value);
+            internal List<object> Raw => items;
+        }
+
+        public ItemCollection Items { get; }
+
+        private int selectedIndex = -1;
+        public int SelectedIndex
+        {
+            get => selectedIndex;
+            set
+            {
+                int v = (value < -1 || value >= Items.Count) ? -1 : value;
+                if (v == selectedIndex) return;
+                selectedIndex = v;
+                Invalidate();
+                SelectedIndexChanged?.Invoke(this, EventArgs.Empty);
+            }
+        }
+
+        public object SelectedItem
+        {
+            get => selectedIndex >= 0 && selectedIndex < Items.Count ? Items[selectedIndex] : null;
+            set => SelectedIndex = value == null ? -1 : Items.Raw.IndexOf(value);
+        }
+
+        public event EventHandler SelectedIndexChanged;
+
+        private bool hover;
+
         public MacComboBox()
         {
-            DropDownStyle = ComboBoxStyle.DropDownList;
-            FlatStyle = FlatStyle.Flat;
-            BackColor = Color.FromArgb(242, 242, 245);
+            Items = new ItemCollection(this);
+            SetStyle(ControlStyles.AllPaintingInWmPaint | ControlStyles.UserPaint |
+                      ControlStyles.OptimizedDoubleBuffer | ControlStyles.ResizeRedraw |
+                      ControlStyles.SupportsTransparentBackColor, true);
+            BackColor = Color.Transparent;
             ForeColor = Theme.TextPrimary;
-            Font = Theme.Sans(9.5f);
+            Cursor = Cursors.Hand;
+            Font = Theme.Sans(10f);
+            Height = 34;
+        }
+
+        protected override void OnMouseEnter(EventArgs e) { hover = true; Invalidate(); base.OnMouseEnter(e); }
+        protected override void OnMouseLeave(EventArgs e) { hover = false; Invalidate(); base.OnMouseLeave(e); }
+        protected override void OnEnabledChanged(EventArgs e) { Invalidate(); base.OnEnabledChanged(e); }
+
+        protected override void OnClick(EventArgs e)
+        {
+            base.OnClick(e);
+            if (!Enabled || Items.Count == 0) return;
+
+            var names = Items.Raw.ConvertAll(o => o?.ToString() ?? "");
+            var popup = new MacDropdownPopup(names, SelectedIndex, Width, Font);
+            popup.ItemPicked += (s, idx) => SelectedIndex = idx;
+            popup.ShowBelow(this);
+        }
+
+        protected override void OnPaint(PaintEventArgs e)
+        {
+            var g = e.Graphics;
+            g.SmoothingMode = SmoothingMode.AntiAlias;
+            var rect = new RectangleF(0, 0, Width - 1, Height - 1);
+
+            Color fill = !Enabled ? Theme.ControlBg : (hover ? Color.FromArgb(46, 46, 50) : Theme.ControlBg);
+            using (var path = Theme.RoundedRect(rect, 8f))
+            using (var b = new SolidBrush(fill))
+            using (var pen = new Pen(Theme.CardBorder, 1f))
+            {
+                g.FillPath(b, path);
+                g.DrawPath(pen, path);
+            }
+
+            string text = SelectedItem?.ToString() ?? "";
+            var textRect = new Rectangle(12, 0, Width - 34, Height);
+            TextRenderer.DrawText(g, text, Font, textRect, Enabled ? Theme.TextPrimary : Theme.TextSecondary,
+                TextFormatFlags.Left | TextFormatFlags.VerticalCenter | TextFormatFlags.EndEllipsis |
+                TextFormatFlags.NoPrefix);
+
+            float cx = Width - 18, cy = Height / 2f;
+            using (var pen = new Pen(Theme.TextSecondary, 1.6f))
+            {
+                pen.StartCap = pen.EndCap = LineCap.Round;
+                g.DrawLines(pen, new[]
+                {
+                    new PointF(cx - 4, cy - 2.5f),
+                    new PointF(cx, cy + 2.5f),
+                    new PointF(cx + 4, cy - 2.5f)
+                });
+            }
+        }
+    }
+
+    /// <summary>Borderless popup list shown by <see cref="MacComboBox"/>. Closes on
+    /// selection or when it loses focus (click elsewhere, Alt-Tab, etc).</summary>
+    internal sealed class MacDropdownPopup : Form
+    {
+        public event EventHandler<int> ItemPicked;
+
+        private readonly List<string> items;
+        private int hoverIndex;
+        private const int ItemHeight = 30;
+        private const int Pad = 4;
+
+        public MacDropdownPopup(List<string> items, int selected, int width, Font font)
+        {
+            this.items = items;
+            hoverIndex = selected;
+
+            FormBorderStyle = FormBorderStyle.None;
+            ShowInTaskbar = false;
+            StartPosition = FormStartPosition.Manual;
+            TopMost = true;
+            BackColor = Theme.WindowBg; // corners outside the rounded Region show the owner's window bg
+            Font = font;
+            DoubleBuffered = true;
+
+            int rows = Math.Max(1, Math.Min(items.Count, 8));
+            Width = Math.Max(width, 160);
+            Height = rows * ItemHeight + Pad * 2;
+        }
+
+        public void ShowBelow(Control anchor)
+        {
+            var screenPt = anchor.Parent.PointToScreen(new Point(anchor.Left, anchor.Bottom + 4));
+            var area = Screen.FromControl(anchor).WorkingArea;
+            if (screenPt.Y + Height > area.Bottom) screenPt.Y = anchor.Parent.PointToScreen(anchor.Location).Y - Height - 4;
+            Location = screenPt;
+            Show();
+            Activate();
+        }
+
+        protected override void OnLoad(EventArgs e)
+        {
+            base.OnLoad(e);
+            using var path = Theme.RoundedRect(new RectangleF(0, 0, Width, Height), 10f);
+            Region = new Region(path);
+        }
+
+        protected override void OnDeactivate(EventArgs e) { base.OnDeactivate(e); Close(); }
+
+        protected override void OnMouseMove(MouseEventArgs e)
+        {
+            int idx = (e.Y - Pad) / ItemHeight;
+            if (idx < 0 || idx >= items.Count) idx = -1;
+            if (idx != hoverIndex) { hoverIndex = idx; Invalidate(); }
+            base.OnMouseMove(e);
+        }
+
+        protected override void OnMouseClick(MouseEventArgs e)
+        {
+            int idx = (e.Y - Pad) / ItemHeight;
+            if (idx >= 0 && idx < items.Count)
+            {
+                ItemPicked?.Invoke(this, idx);
+                Close();
+            }
+            base.OnMouseClick(e);
+        }
+
+        protected override void OnPaint(PaintEventArgs e)
+        {
+            var g = e.Graphics;
+            g.SmoothingMode = SmoothingMode.AntiAlias;
+            using (var b = new SolidBrush(Theme.CardBg)) g.FillRectangle(b, ClientRectangle);
+            using (var pen = new Pen(Theme.CardBorder, 1f)) g.DrawRectangle(pen, 0, 0, Width - 1, Height - 1);
+
+            for (int i = 0; i < items.Count; i++)
+            {
+                var r = new Rectangle(Pad, Pad + i * ItemHeight, Width - Pad * 2, ItemHeight);
+                if (i == hoverIndex)
+                {
+                    using var path = Theme.RoundedRect(r, 6f);
+                    using var hb = new SolidBrush(Theme.Accent);
+                    g.FillPath(hb, path);
+                }
+                TextRenderer.DrawText(g, items[i], Font,
+                    new Rectangle(r.X + 10, r.Y, r.Width - 16, r.Height),
+                    i == hoverIndex ? Color.White : Theme.TextPrimary,
+                    TextFormatFlags.Left | TextFormatFlags.VerticalCenter | TextFormatFlags.EndEllipsis |
+                    TextFormatFlags.NoPrefix);
+            }
         }
     }
 }

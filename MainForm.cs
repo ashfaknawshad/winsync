@@ -26,7 +26,7 @@ namespace WinSync
             var titleLabel = new Label
             {
                 Text = title,
-                Font = Theme.Sans(11f, FontStyle.Bold),
+                Font = Theme.Sans(12f, FontStyle.Bold),
                 ForeColor = Theme.TextPrimary,
                 Location = new Point(18, 16),
                 AutoSize = true
@@ -36,15 +36,15 @@ namespace WinSync
 
             Device = new MacComboBox { Location = new Point(18, 46), Width = 548 };
 
-            var dl = new Label { Text = "Delay", Font = Theme.Sans(8.5f), ForeColor = Theme.TextSecondary, Location = new Point(18, 88), AutoSize = true };
+            var dl = new Label { Text = "Delay", Font = Theme.Sans(9f), ForeColor = Theme.TextSecondary, Location = new Point(18, 88), AutoSize = true };
             Delay = new MacSlider { Location = new Point(18, 104), Width = 460, Minimum = 0, Maximum = 1000, Value = 0 };
-            DelayLabel = new Label { Text = "0 ms", Font = Theme.Sans(8.5f, FontStyle.Bold), ForeColor = Theme.TextPrimary, Location = new Point(490, 100), AutoSize = true, TextAlign = ContentAlignment.MiddleRight };
+            DelayLabel = new Label { Text = "0 ms", Font = Theme.Sans(9f, FontStyle.Bold), ForeColor = Theme.TextPrimary, Location = new Point(490, 100), AutoSize = true, TextAlign = ContentAlignment.MiddleRight };
 
-            var vl = new Label { Text = "Volume", Font = Theme.Sans(8.5f), ForeColor = Theme.TextSecondary, Location = new Point(18, 132), AutoSize = true };
+            var vl = new Label { Text = "Volume", Font = Theme.Sans(9f), ForeColor = Theme.TextSecondary, Location = new Point(18, 132), AutoSize = true };
             Volume = new MacSlider { Location = new Point(18, 148), Width = 460, Minimum = 0, Maximum = 100, Value = 100 };
-            VolumeLabel = new Label { Text = "100%", Font = Theme.Sans(8.5f, FontStyle.Bold), ForeColor = Theme.TextPrimary, Location = new Point(490, 144), AutoSize = true };
+            VolumeLabel = new Label { Text = "100%", Font = Theme.Sans(9f, FontStyle.Bold), ForeColor = Theme.TextPrimary, Location = new Point(490, 144), AutoSize = true };
 
-            Status = new Label { Location = new Point(18, 132), AutoSize = true, ForeColor = Theme.TextSecondary, Font = Theme.Sans(8f), Text = "", Visible = false };
+            Status = new Label { Location = new Point(18, 132), AutoSize = true, ForeColor = Theme.TextSecondary, Font = Theme.Sans(9f), Text = "", Visible = false };
 
             Controls.AddRange(new Control[] { titleLabel, EnableToggle, Device, dl, Delay, DelayLabel, vl, Volume, VolumeLabel, Status });
 
@@ -62,13 +62,13 @@ namespace WinSync
         private readonly Label lblSubtitle = new Label { Text = "Mirror your system audio to two headphones, perfectly in sync.", Font = Theme.Sans(9f), ForeColor = Theme.TextSecondary, AutoSize = true };
 
         private readonly Card sourceCard = new Card { Size = new Size(584, 108) };
-        private readonly Label lblSourceCaption = new Label { Text = "TAP DEVICE", Font = Theme.Sans(8f, FontStyle.Bold), ForeColor = Theme.TextSecondary, AutoSize = true };
-        private readonly Label lblSourceHint = new Label { Text = "Pick your slowest device (usually Bluetooth) and set it as the Windows default output.", Font = Theme.Sans(8.5f), ForeColor = Theme.TextSecondary, AutoSize = false, Width = 480, Height = 32 };
+        private readonly Label lblSourceCaption = new Label { Text = "TAP DEVICE", Font = Theme.Sans(9f, FontStyle.Bold), ForeColor = Theme.TextSecondary, AutoSize = true };
+        private readonly Label lblSourceHint = new Label { Text = "Pick your slowest device (usually Bluetooth) and set it as the Windows default output.", Font = Theme.Sans(9f), ForeColor = Theme.TextSecondary, AutoSize = false, Width = 480, Height = 32 };
         private readonly MacComboBox cbSource = new MacComboBox { Width = 400 };
         private readonly MacButton btnRefresh = new MacButton { Text = "Refresh", Primary = false, Width = 90, Height = 30 };
 
         private readonly MacButton btnStart = new MacButton { Text = "Start", Primary = true, Width = 140, Height = 40 };
-        private readonly Label lblHint = new Label { AutoSize = true, ForeColor = Theme.TextSecondary, Font = Theme.Sans(8.5f) };
+        private readonly Label lblHint = new Label { AutoSize = true, ForeColor = Theme.TextSecondary, Font = Theme.Sans(9f) };
 
         private readonly OutputRow row1 = new OutputRow("Output 1");
         private readonly OutputRow row2 = new OutputRow("Output 2");
