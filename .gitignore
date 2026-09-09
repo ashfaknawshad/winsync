@@ -2,3 +2,6 @@ bin/
 obj/
 *.user
 .vs/
+Installer/bin/
+Installer/obj/
+.wix/

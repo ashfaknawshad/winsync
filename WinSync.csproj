@@ -18,14 +18,17 @@
     <Description>Play the same system audio through two headphones on Windows, with per-device delay and drift correction.</Description>
     <Version>1.0.0</Version>
     <FileVersion>1.0.0.0</FileVersion>
-
-    <!-- publish defaults for a self-contained, single-file exe -->
-    <SelfContained>true</SelfContained>
-    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
-    <PublishSingleFile>true</PublishSingleFile>
-    <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
-    <EnableCompressionInSingleFile>true</EnableCompressionInSingleFile>
   </PropertyGroup>
+
+  <!--
+    Two publish shapes, selected with `dotnet publish -p:PublishProfile=<Name>`
+    (see Properties/PublishProfiles):
+      Portable-win-x64   self-contained single exe, no prerequisites, ~70MB
+      Installer-win-x64  framework-dependent, tiny — payload for the MSI,
+                         requires the .NET 8 Desktop Runtime on the machine
+    Plain `dotnet build`/`dotnet run` stay framework-dependent and non-single-file
+    for a fast inner dev loop.
+  -->
 
   <ItemGroup>
     <PackageReference Include="NAudio" Version="2.2.1" />

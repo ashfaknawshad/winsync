@@ -62,8 +62,15 @@ math — see [`Dual-Audio-Report.md`](Dual-Audio-Report.md).
 
 ## Install
 
-Grab the latest `WinSync.exe` from [Releases](../../releases). It's a single
-self-contained file — no .NET install required, just run it.
+Grab the latest release from [Releases](../../releases). Two options:
+
+- **`WinSync-Setup.msi`** (recommended, ~700KB) — a proper per-user installer:
+  Start Menu shortcut, clean uninstall via Settings → Apps, no admin rights
+  needed. Requires the [.NET 8 Desktop Runtime](https://dotnet.microsoft.com/download/dotnet/8.0)
+  — if it's missing, WinSync's own launcher will prompt you to install it the
+  first time you run it.
+- **`WinSync.exe`** (~70MB) — a single portable, self-contained file with the
+  .NET runtime bundled in. No install, no prerequisites, just run it.
 
 > Windows SmartScreen may warn about an unsigned file on first run. Click
 > **More info → Run anyway**. WinSync is free and open source; you can read
@@ -72,15 +79,27 @@ self-contained file — no .NET install required, just run it.
 ### Build from source
 
 ```
-git clone https://github.com/<you>/winsync.git
+git clone https://github.com/ashfaknawshad/winsync.git
 cd winsync
-dotnet publish -c Release -r win-x64 --self-contained
+dotnet publish -c Release -p:PublishProfile=Portable-win-x64    # standalone exe
+dotnet publish -c Release -p:PublishProfile=Installer-win-x64   # small, for the MSI
 ```
 
-The exe lands in `bin\Release\net8.0-windows\win-x64\publish\WinSync.exe`.
+Outputs land in `bin\publish\portable-win-x64\` and `bin\publish\installer-win-x64\`.
 
 Or just `dotnet run` to launch it directly during development (requires the
 [.NET 8 SDK](https://dotnet.microsoft.com/download/dotnet/8.0)).
+
+### Build the MSI
+
+```
+dotnet tool restore
+dotnet publish -c Release -p:PublishProfile=Installer-win-x64
+dotnet build Installer -c Release
+```
+
+The MSI lands in `Installer\bin\x64\Release\WinSync-Setup.msi` (built with the
+[WiX Toolset](https://wixtoolset.org/) v5).
 
 ## Usage
 
