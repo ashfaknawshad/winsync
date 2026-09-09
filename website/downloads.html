@@ -32,6 +32,9 @@
     <a href="https://github.com/ashfaknawshad/winsync">
       <img src="https://img.shields.io/github/stars/ashfaknawshad/winsync?style=flat-square&amp;label=Stars&amp;color=007aff" alt="GitHub stars" height="20">
     </a>
+    <a href="https://github.com/ashfaknawshad/winsync/releases">
+      <img src="https://img.shields.io/github/downloads/ashfaknawshad/winsync/total?style=flat-square&amp;label=Downloads&amp;color=2ea043" alt="Total downloads" height="20">
+    </a>
   </p>
 </div>
 
@@ -161,9 +164,11 @@
         (rel.assets || []).forEach(function (asset) {
           const row = document.createElement("div");
           row.className = "asset-row";
+          const count = asset.download_count || 0;
+          const countLabel = count === 1 ? "1 download" : count + " downloads";
           row.innerHTML =
             '<span><span class="name">' + assetIcon(asset.name) + " " + asset.name + '</span> ' +
-            '<span class="meta">— ' + formatBytes(asset.size) + "</span></span>" +
+            '<span class="meta">— ' + formatBytes(asset.size) + " · " + countLabel + "</span></span>" +
             '<a class="dl" href="' + asset.browser_download_url + '">Download</a>';
           assets.appendChild(row);
         });
