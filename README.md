@@ -76,7 +76,8 @@ Grab the latest release from [Releases](../../releases). Two options:
 
 > Windows SmartScreen may warn about an unsigned file on first run. Click
 > **More info → Run anyway**. WinSync is free and open source; you can read
-> every line of it right here.
+> every line of it right here. (Working on getting this signed — see
+> [SIGNING.md](SIGNING.md).)
 
 ### Build from source
 

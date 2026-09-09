@@ -1,0 +1,118 @@
+name: Release
+
+# Builds the portable exe and the MSI on every tag push (v*), signs them via
+# SignPath if the repo has the SignPath secrets configured (see SIGNING.md),
+# and attaches the result to the GitHub Release for that tag. Without the
+# secrets it still builds and publishes unsigned artifacts — signing is
+# opt-in once you're approved for SignPath's free open-source program.
+
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch: {}
+
+jobs:
+  build:
+    runs-on: windows-latest
+    outputs:
+      has-signpath: ${{ steps.check-secrets.outputs.has-signpath }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "8.0.x"
+
+      - name: Restore local tools (WiX)
+        run: dotnet tool restore
+
+      - name: Publish portable exe (self-contained)
+        run: dotnet publish -c Release -p:PublishProfile=Portable-win-x64
+
+      - name: Publish installer payload (framework-dependent)
+        run: dotnet publish -c Release -p:PublishProfile=Installer-win-x64
+
+      - name: Build MSI
+        run: dotnet build Installer -c Release
+
+      - name: Stage unsigned artifacts
+        run: |
+          mkdir dist
+          copy bin\publish\portable-win-x64\WinSync.exe dist\WinSync.exe
+          copy Installer\bin\x64\Release\WinSync-Setup.msi dist\WinSync-Setup.msi
+        shell: cmd
+
+      - id: check-secrets
+        shell: bash
+        run: |
+          if [ -n "${{ secrets.SIGNPATH_API_TOKEN }}" ]; then
+            echo "has-signpath=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "has-signpath=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: unsigned
+          path: dist/
+
+  sign:
+    needs: build
+    if: needs.build.outputs.has-signpath == 'true'
+    runs-on: windows-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: unsigned
+          path: dist
+
+      - name: Zip artifacts for signing
+        run: Compress-Archive -Path dist\* -DestinationPath unsigned.zip
+        shell: pwsh
+
+      # See SIGNING.md for how to get these values after SignPath approval.
+      # https://github.com/signpath/github-action-submit-signing-request
+      - name: Submit to SignPath
+        uses: signpath/github-action-submit-signing-request@v1
+        with:
+          api-token: "${{ secrets.SIGNPATH_API_TOKEN }}"
+          organization-id: "${{ secrets.SIGNPATH_ORG_ID }}"
+          project-slug: "winsync"
+          signing-policy-slug: "release-signing"
+          artifact-configuration-slug: "winsync-artifacts"
+          github-artifact-id: "" # left blank; using input-artifact-path below instead
+          input-artifact-path: unsigned.zip
+          output-artifact-path: signed.zip
+          wait-for-completion: true
+
+      - name: Unzip signed artifacts
+        run: Expand-Archive -Path signed.zip -DestinationPath signed
+        shell: pwsh
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: signed
+          path: signed/
+
+  release:
+    needs: [build, sign]
+    if: always() && needs.build.result == 'success'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: unsigned
+          path: dist
+
+      - uses: actions/download-artifact@v4
+        if: needs.sign.result == 'success'
+        with:
+          name: signed
+          path: dist
+        continue-on-error: true
+
+      - name: Publish to the GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: dist/*
+          fail_on_unmatched_files: true
