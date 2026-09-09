@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 using NAudio.CoreAudioApi;
 
@@ -143,6 +144,7 @@ namespace WinSync
             uiTimer.Start();
 
             LoadDevices();
+            _ = CheckForUpdatesAsync();
 
             Resize += (s, e) =>
             {
@@ -183,6 +185,15 @@ namespace WinSync
         {
             trayIcon.Visible = false;
             Close();
+        }
+
+        private async Task CheckForUpdatesAsync()
+        {
+            var info = await UpdateChecker.CheckForUpdateAsync();
+            if (info == null) return;
+            if (IsDisposed || !IsHandleCreated) return;
+
+            BeginInvoke(new Action(() => new UpdateToast(info).ShowNear(this)));
         }
 
         private void LoadDevices()
