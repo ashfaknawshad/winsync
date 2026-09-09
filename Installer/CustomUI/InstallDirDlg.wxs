@@ -1,0 +1,46 @@
+<!--
+  Modified copy of WiX's stock InstallDirDlg (WixToolset.UI.wixext v5.0.2,
+  src/ext/UI/wixlib/InstallDirDlg.wxs), with two shortcut checkboxes added
+  below the folder picker.
+
+  Renamed Dialog Id to InstallDirDlg_WithShortcuts (not "InstallDirDlg")
+  because WiX v5's linker treats a same-named symbol defined both locally
+  and in a referenced extension as a hard duplicate-definition error, not an
+  override — there's no "local wins" precedence like classic light.exe had.
+  The fix (confirmed against a working WiX v5.0.1 example: see SIGNING.md-
+  style provenance note in WixUI_InstallDir.wxs) is to give the customized
+  dialog and its UI sequence unique names, and re-point every Publish
+  reference that used to target the stock dialog at the new one. The stock
+  "InstallDirDlg" then simply goes unreferenced and unlinked — no conflict.
+-->
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs">
+    <Fragment>
+        <UI>
+            <Dialog Id="InstallDirDlg_WithShortcuts" Width="370" Height="270" Title="!(loc.InstallDirDlg_Title)">
+                <Control Id="Next" Type="PushButton" X="236" Y="243" Width="56" Height="17" Default="yes" Text="!(loc.WixUINext)" />
+                <Control Id="Back" Type="PushButton" X="180" Y="243" Width="56" Height="17" Text="!(loc.WixUIBack)" />
+                <Control Id="Cancel" Type="PushButton" X="304" Y="243" Width="56" Height="17" Cancel="yes" Text="!(loc.WixUICancel)">
+                    <Publish Event="SpawnDialog" Value="CancelDlg" />
+                </Control>
+
+                <Control Id="Description" Type="Text" X="25" Y="23" Width="280" Height="15" Transparent="yes" NoPrefix="yes" Text="!(loc.InstallDirDlgDescription)" />
+                <Control Id="Title" Type="Text" X="15" Y="6" Width="200" Height="15" Transparent="yes" NoPrefix="yes" Text="!(loc.InstallDirDlgTitle)" />
+                <Control Id="BannerBitmap" Type="Bitmap" X="0" Y="0" Width="370" Height="44" TabSkip="no" Text="!(loc.InstallDirDlgBannerBitmap)" />
+                <Control Id="BannerLine" Type="Line" X="0" Y="44" Width="370" Height="0" />
+                <Control Id="BottomLine" Type="Line" X="0" Y="234" Width="370" Height="0" />
+
+                <Control Id="FolderLabel" Type="Text" X="20" Y="60" Width="290" Height="30" NoPrefix="yes" Text="!(loc.InstallDirDlgFolderLabel)" />
+                <Control Id="Folder" Type="PathEdit" X="20" Y="100" Width="320" Height="18" Property="WIXUI_INSTALLDIR" Indirect="yes" />
+                <Control Id="ChangeFolder" Type="PushButton" X="20" Y="120" Width="56" Height="17" Text="!(loc.InstallDirDlgChange)" />
+
+                <!-- Shortcut options — added for WinSync. Bound properties are
+                     read by Package.wxs's shortcut Component Conditions. -->
+                <Control Id="ShortcutsLabel" Type="Text" X="20" Y="150" Width="290" Height="15" NoPrefix="yes" Text="Shortcuts" />
+                <Control Id="DesktopShortcutCheckBox" Type="CheckBox" X="20" Y="168" Width="290" Height="17"
+                         Property="INSTALLDESKTOPSHORTCUT" CheckBoxValue="1" Text="Create a &amp;desktop shortcut" />
+                <Control Id="StartMenuShortcutCheckBox" Type="CheckBox" X="20" Y="188" Width="290" Height="17"
+                         Property="INSTALLSTARTMENUSHORTCUT" CheckBoxValue="1" Text="Create a &amp;Start Menu shortcut" />
+            </Dialog>
+        </UI>
+    </Fragment>
+</Wix>

@@ -13,7 +13,7 @@
   -->
   <Package Name="WinSync"
            Manufacturer="Ashfak Nawshad"
-           Version="1.0.1"
+           Version="1.0.2"
            UpgradeCode="c198ef92-c5b9-4b9e-aa13-b1a77711311f"
            Scope="perUser"
            InstallerVersion="500">
@@ -28,9 +28,14 @@
     <Property Id="ARPURLINFOABOUT" Value="https://github.com/ashfaknawshad/winsync" />
     <Property Id="ARPNOREPAIR" Value="1" />
 
+    <!-- Shortcut checkboxes on the install-dir page (Installer/CustomUI/InstallDirDlg.wxs)
+         are bound to these; both default checked. -->
+    <Property Id="INSTALLDESKTOPSHORTCUT" Value="1" />
+    <Property Id="INSTALLSTARTMENUSHORTCUT" Value="1" />
+
     <StandardDirectory Id="LocalAppDataFolder">
       <Directory Id="INSTALLFOLDER" Name="WinSync">
-        <Component Id="MainExecutable" Guid="8f2c6d1a-8f0a-4a3a-9f4a-1a2f6b8c9d10">
+        <Component Id="MainExecutable" Guid="ac84f75a-2f67-493f-93f9-a88cfd6e9711">
           <!--
             Per-user (HKCU) components must key off the registry, not the file
             itself (ICE38/ICE43), and the profile directory needs an explicit
@@ -39,27 +44,74 @@
           <RegistryValue Root="HKCU" Key="Software\WinSync" Name="Installed"
                           Type="integer" Value="1" KeyPath="yes" />
           <RemoveFolder Id="RemoveInstallFolder" Directory="INSTALLFOLDER" On="uninstall" />
-          <File Id="WinSyncExe"
-                Source="..\bin\publish\installer-win-x64\WinSync.exe">
-            <Shortcut Id="StartMenuShortcut"
-                      Directory="ProgramMenuFolder"
-                      Name="WinSync"
-                      WorkingDirectory="INSTALLFOLDER"
-                      Advertise="no" />
-          </File>
+          <File Id="WinSyncExe" Source="..\bin\publish\installer-win-x64\WinSync.exe" />
+        </Component>
+
+        <!--
+          Optional shortcuts: each is its own component so unchecking its box
+          on InstallDirDlg (Condition references the same property the
+          checkbox is bound to) skips it entirely, including on uninstall.
+
+          Target is a literal formatted path ("[INSTALLFOLDER]WinSync.exe"),
+          not a File-table "[#FileId]" reference into MainExecutable, and
+          these components own no File of their own. Both alternatives were
+          tried and rejected:
+            - Target="[#WinSyncExe]" (cross-component File reference): WiX's
+              binder auto-generates an "isolated" duplicate component to
+              satisfy MSI's same-component Shortcut/File-target rule, which
+              corrupts Windows Installer's ref-counting — confirmed by an
+              actual install/uninstall test where MainExecutable's Action
+              resolved to Null (skip) instead of Remove, leaving WinSync.exe
+              behind after uninstall.
+            - Each shortcut component owning its own File at the same
+              destination path: rejected at build time by ICE30, since
+              MainExecutable (unconditional) and these (conditional) sharing
+              one target path breaks ref-counting by definition.
+          A literal Target path has no File-table linkage at all, so neither
+          problem applies. Verified: install, uninstall with either/both
+          boxes unchecked, and full uninstall all leave a clean profile.
+        -->
+        <Component Id="StartMenuShortcutComponent" Guid="dfeee2a4-9c33-47b2-81f8-889a48802b56"
+                   Condition="INSTALLSTARTMENUSHORTCUT = &quot;1&quot;">
+          <RegistryValue Root="HKCU" Key="Software\WinSync" Name="StartMenuShortcut"
+                          Type="integer" Value="1" KeyPath="yes" />
+          <Shortcut Id="StartMenuShortcut"
+                    Directory="ProgramMenuFolder"
+                    Name="WinSync"
+                    Target="[INSTALLFOLDER]WinSync.exe"
+                    WorkingDirectory="INSTALLFOLDER"
+                    Advertise="no" />
+        </Component>
+
+        <Component Id="DesktopShortcutComponent" Guid="f5604a91-b772-40f3-861a-aba0dd54c648"
+                   Condition="INSTALLDESKTOPSHORTCUT = &quot;1&quot;">
+          <RegistryValue Root="HKCU" Key="Software\WinSync" Name="DesktopShortcut"
+                          Type="integer" Value="1" KeyPath="yes" />
+          <Shortcut Id="DesktopShortcut"
+                    Directory="DesktopFolder"
+                    Name="WinSync"
+                    Target="[INSTALLFOLDER]WinSync.exe"
+                    WorkingDirectory="INSTALLFOLDER"
+                    Advertise="no" />
         </Component>
       </Directory>
     </StandardDirectory>
 
     <StandardDirectory Id="ProgramMenuFolder" />
+    <StandardDirectory Id="DesktopFolder" />
 
     <Feature Id="MainFeature" Title="WinSync" Level="1">
       <ComponentRef Id="MainExecutable" />
+      <ComponentRef Id="StartMenuShortcutComponent" />
+      <ComponentRef Id="DesktopShortcutComponent" />
     </Feature>
 
-    <!-- WixUI_InstallDir adds the "choose install folder" page, browsing/editing INSTALLFOLDER. -->
+    <!-- WixUI_InstallDir_WithShortcuts (Installer/CustomUI/*.wxs — a modified
+         copy of WiX's stock WixUI_InstallDir with two shortcut checkboxes
+         added to the install-dir page) adds the "choose install folder"
+         page, browsing/editing INSTALLFOLDER. -->
     <Property Id="WIXUI_INSTALLDIR" Value="INSTALLFOLDER" />
-    <ui:WixUI Id="WixUI_InstallDir" />
+    <ui:WixUI Id="WixUI_InstallDir_WithShortcuts" />
     <WixVariable Id="WixUILicenseRtf" Value="License.rtf" />
 
   </Package>
