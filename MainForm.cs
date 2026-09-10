@@ -8,7 +8,8 @@ using NAudio.CoreAudioApi;
 
 namespace WinSync
 {
-    /// <summary>One mirrored-output card: enable toggle, device picker, delay + volume sliders, live status.</summary>
+    /// <summary>One mirrored-output card: numbered badge, enable toggle, device picker,
+    /// delay + volume sliders, live status.</summary>
     public sealed class OutputRow : Card
     {
         public MacToggle EnableToggle;
@@ -19,17 +20,33 @@ namespace WinSync
         public Label VolumeLabel;
         public Label Status;
 
-        public OutputRow(string title)
+        public OutputRow(string number, string title)
         {
             Size = new Size(584, 168);
+
+            var badge = new NumberBadge(number) { Location = new Point(18, 16) };
 
             var titleLabel = new Label
             {
                 Text = title,
                 Font = Theme.Sans(12f, FontStyle.Bold),
                 ForeColor = Theme.TextPrimary,
-                Location = new Point(18, 16),
+                Location = new Point(50, 18),
                 AutoSize = true
+            };
+
+            // Live buffer readout while running — sits in the header row, to the left
+            // of the toggle, rather than where it used to collide directly with the
+            // "Volume" label below.
+            Status = new Label
+            {
+                Location = new Point(320, 19),
+                Size = new Size(200, 18),
+                TextAlign = ContentAlignment.MiddleRight,
+                ForeColor = Theme.TextSecondary,
+                Font = Theme.Sans(8.5f),
+                Text = "",
+                Visible = false
             };
 
             EnableToggle = new MacToggle { Location = new Point(534, 16) };
@@ -44,9 +61,7 @@ namespace WinSync
             Volume = new MacSlider { Location = new Point(18, 148), Width = 460, Minimum = 0, Maximum = 100, Value = 100 };
             VolumeLabel = new Label { Text = "100%", Font = Theme.Sans(9f, FontStyle.Bold), ForeColor = Theme.TextPrimary, Location = new Point(490, 144), AutoSize = true };
 
-            Status = new Label { Location = new Point(18, 132), AutoSize = true, ForeColor = Theme.TextSecondary, Font = Theme.Sans(9f), Text = "", Visible = false };
-
-            Controls.AddRange(new Control[] { titleLabel, EnableToggle, Device, dl, Delay, DelayLabel, vl, Volume, VolumeLabel, Status });
+            Controls.AddRange(new Control[] { badge, titleLabel, Status, EnableToggle, Device, dl, Delay, DelayLabel, vl, Volume, VolumeLabel });
 
             Delay.ValueChanged += (s, e) => DelayLabel.Text = Delay.Value + " ms";
             Volume.ValueChanged += (s, e) => VolumeLabel.Text = Volume.Value + "%";
@@ -64,8 +79,9 @@ namespace WinSync
         private readonly MacButton btnCheckUpdate = new MacButton { Text = "Check for Updates", Primary = false, Width = 150, Height = 26 };
         private readonly MacButton btnHelp = new MacButton { Text = "?", Primary = false, Width = 26, Height = 26 };
 
-        private readonly Card sourceCard = new Card { Size = new Size(584, 128) };
-        private readonly Label lblSourceCaption = new Label { Text = "DEVICE 1 · ALREADY PLAYING", Font = Theme.Sans(9f, FontStyle.Bold), ForeColor = Theme.TextSecondary, AutoSize = true };
+        private readonly Card sourceCard = new Card { Size = new Size(584, 136) };
+        private readonly NumberBadge sourceBadge = new NumberBadge("1");
+        private readonly Label lblSourceTitle = new Label { Text = "Already playing", Font = Theme.Sans(12f, FontStyle.Bold), ForeColor = Theme.TextPrimary, AutoSize = true };
         private readonly Label lblSourceHint = new Label { Text = "This counts as one of your headphones — no delay slider needed here. Pick your slowest device (usually Bluetooth) and set it as the Windows default output.", Font = Theme.Sans(9f), ForeColor = Theme.TextSecondary, AutoSize = false, Width = 500, Height = 48 };
         private readonly MacComboBox cbSource = new MacComboBox { Width = 400 };
         private readonly MacButton btnRefresh = new MacButton { Text = "Refresh", Primary = false, Width = 90, Height = 30 };
@@ -73,8 +89,8 @@ namespace WinSync
         private readonly MacButton btnStart = new MacButton { Text = "Start", Primary = true, Width = 140, Height = 40 };
         private readonly Label lblHint = new Label { AutoSize = true, ForeColor = Theme.TextSecondary, Font = Theme.Sans(9f) };
 
-        private readonly OutputRow row1 = new OutputRow("Device 2");
-        private readonly OutputRow row2 = new OutputRow("Device 3 (optional)");
+        private readonly OutputRow row1 = new OutputRow("2", "Device 2");
+        private readonly OutputRow row2 = new OutputRow("3", "Device 3 · optional");
         private readonly Timer uiTimer = new Timer { Interval = 400 };
 
         private readonly NotifyIcon trayIcon = new NotifyIcon();
@@ -92,7 +108,7 @@ namespace WinSync
             AutoScaleMode = AutoScaleMode.None;
 
             Text = "WinSync";
-            ClientSize = new Size(620, 660);
+            ClientSize = new Size(620, 668);
             FormBorderStyle = FormBorderStyle.FixedSingle;
             MaximizeBox = false;
             BackColor = Theme.WindowBg;
@@ -117,17 +133,18 @@ namespace WinSync
             btnCheckUpdate.Location = new Point(452, 26);
 
             sourceCard.Location = new Point(18, 78);
-            lblSourceCaption.Location = new Point(18, 16);
-            cbSource.Location = new Point(18, 36);
-            btnRefresh.Location = new Point(428, 34);
-            lblSourceHint.Location = new Point(18, 72);
-            sourceCard.Controls.AddRange(new Control[] { lblSourceCaption, cbSource, btnRefresh, lblSourceHint });
+            sourceBadge.Location = new Point(18, 16);
+            lblSourceTitle.Location = new Point(50, 18);
+            cbSource.Location = new Point(18, 44);
+            btnRefresh.Location = new Point(428, 42);
+            lblSourceHint.Location = new Point(18, 80);
+            sourceCard.Controls.AddRange(new Control[] { sourceBadge, lblSourceTitle, cbSource, btnRefresh, lblSourceHint });
 
-            row1.Location = new Point(18, 216);
-            row2.Location = new Point(18, 392);
+            row1.Location = new Point(18, 224);
+            row2.Location = new Point(18, 400);
 
-            btnStart.Location = new Point(18, 580);
-            lblHint.Location = new Point(174, 592);
+            btnStart.Location = new Point(18, 588);
+            lblHint.Location = new Point(174, 600);
             lblHint.Text = "Play a video, then drag Delay until the two headphones line up.";
 
             Controls.AddRange(new Control[] { appIcon, lblTitle, lblSubtitle, btnHelp, btnCheckUpdate, sourceCard, row1, row2, btnStart, lblHint });

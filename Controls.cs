@@ -58,7 +58,8 @@ namespace WinSync
         }
     }
 
-    /// <summary>A white rounded card with a hairline border, macOS "panel" style.</summary>
+    /// <summary>A rounded surface with a hairline border, sitting one elevation above
+    /// the window background.</summary>
     public class Card : Panel
     {
         public float Radius = 14f;
@@ -67,7 +68,13 @@ namespace WinSync
         {
             SetStyle(ControlStyles.AllPaintingInWmPaint | ControlStyles.UserPaint |
                       ControlStyles.OptimizedDoubleBuffer | ControlStyles.ResizeRedraw, true);
-            BackColor = Theme.WindowBg;
+            // Must match what OnPaint actually fills (Theme.CardBg), not the window
+            // background — a plain child Label with no BackColor of its own inherits
+            // this value and paints an opaque rectangle in it. Setting this to
+            // WindowBg (as it was) made every label look like it sat in its own
+            // slightly-mismatched dark box, since WindowBg and CardBg are close but
+            // different shades.
+            BackColor = Theme.CardBg;
             Padding = new Padding(18);
         }
 
@@ -82,6 +89,33 @@ namespace WinSync
                 e.Graphics.FillPath(fill, path);
                 e.Graphics.DrawPath(pen, path);
             }
+        }
+    }
+
+    /// <summary>A small filled circle with a number in it — the visual anchor for
+    /// "Device 1 / 2 / 3", replacing the old all-caps text captions. The whole point:
+    /// glance at the three cards and the numbering reads instantly, rather than
+    /// depending on parsing a caption string.</summary>
+    public class NumberBadge : Control
+    {
+        public NumberBadge(string number)
+        {
+            SetStyle(ControlStyles.AllPaintingInWmPaint | ControlStyles.UserPaint |
+                      ControlStyles.OptimizedDoubleBuffer | ControlStyles.SupportsTransparentBackColor, true);
+            BackColor = Color.Transparent;
+            Size = new Size(24, 24);
+            Text = number;
+            Font = Theme.Sans(9.5f, FontStyle.Bold);
+        }
+
+        protected override void OnPaint(PaintEventArgs e)
+        {
+            var g = e.Graphics;
+            g.SmoothingMode = SmoothingMode.AntiAlias;
+            using (var b = new SolidBrush(Theme.Accent))
+                g.FillEllipse(b, 0, 0, Width - 1, Height - 1);
+            TextRenderer.DrawText(g, Text, Font, new Rectangle(0, 0, Width, Height), Color.White,
+                TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter);
         }
     }
 

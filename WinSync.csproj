@@ -16,8 +16,8 @@
     <Product>WinSync</Product>
     <AssemblyTitle>WinSync</AssemblyTitle>
     <Description>Play the same system audio through two headphones on Windows, with per-device delay and drift correction.</Description>
-    <Version>1.0.7</Version>
-    <FileVersion>1.0.7.0</FileVersion>
+    <Version>1.0.8</Version>
+    <FileVersion>1.0.8.0</FileVersion>
   </PropertyGroup>
 
   <!--
