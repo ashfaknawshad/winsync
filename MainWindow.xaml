@@ -1,0 +1,58 @@
+<Window x:Class="WinSync.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:local="clr-namespace:WinSync"
+        Title="WinSync" SizeToContent="WidthAndHeight"
+        ResizeMode="CanMinimize" WindowStyle="SingleBorderWindow"
+        Background="{StaticResource WindowBgBrush}"
+        SnapsToDevicePixels="True" UseLayoutRounding="True">
+
+    <!--
+      Positioned on a Canvas at the same coordinates the previous WinForms
+      version used (translated 1:1), rather than idiomatic WPF flow layout.
+      This was a deliberate choice for this migration specifically: the
+      WinForms layout was already proven correct via a real screenshot, and
+      this session has no safe way to visually verify a rewrite (see
+      MainWindow.xaml.cs header comment) — porting exact coordinates was the
+      lowest-risk way to change the rendering technology without also
+      re-litigating the whole layout blind.
+    -->
+    <Canvas Width="620" Height="692">
+        <Image x:Name="AppIconImage" Canvas.Left="18" Canvas.Top="18" Width="40" Height="40" />
+
+        <TextBlock Text="WinSync" Style="{StaticResource DisplayText}" Canvas.Left="68" Canvas.Top="16" />
+        <TextBlock Text="Mirror your system audio to two headphones, perfectly in sync."
+                   Style="{StaticResource CaptionText}" Canvas.Left="68" Canvas.Top="46" Width="330" />
+
+        <Button x:Name="BtnHelp" Content="?" Style="{StaticResource IconButton}" Canvas.Left="418" Canvas.Top="24" />
+        <Button x:Name="BtnCheckUpdate" Content="Check for Updates" Style="{StaticResource SecondaryButton}"
+                Width="160" Canvas.Left="454" Canvas.Top="26" />
+
+        <!-- ===== Device 1 (source) card ===== -->
+        <Border x:Name="SourceCard" Style="{StaticResource CardStyle}" Width="584" Height="136"
+                Canvas.Left="18" Canvas.Top="78">
+            <Canvas>
+                <Border Style="{StaticResource NumberBadgeStyle}" Canvas.Left="18" Canvas.Top="16">
+                    <TextBlock Text="1" Style="{StaticResource NumberBadgeText}" />
+                </Border>
+                <TextBlock Text="Already playing" Style="{StaticResource TitleText}" Canvas.Left="50" Canvas.Top="17" />
+
+                <ComboBox x:Name="CbSource" Style="{StaticResource MacComboBox}" Width="400"
+                          Canvas.Left="18" Canvas.Top="44" />
+                <Button x:Name="BtnRefresh" Content="Refresh" Style="{StaticResource SecondaryButton}"
+                        Width="90" Canvas.Left="428" Canvas.Top="42" />
+
+                <TextBlock Text="This counts as one of your headphones — no delay slider needed here. Pick your slowest device (usually Bluetooth) and set it as the Windows default output."
+                           Style="{StaticResource CaptionText}" Width="500" Canvas.Left="18" Canvas.Top="80" />
+            </Canvas>
+        </Border>
+
+        <local:OutputRowControl x:Name="Row1" Canvas.Left="18" Canvas.Top="224" Number="2" Title="Device 2" />
+        <local:OutputRowControl x:Name="Row2" Canvas.Left="18" Canvas.Top="412" Number="3" Title="Device 3 · optional" />
+
+        <Button x:Name="BtnStart" Content="Start" Style="{StaticResource PrimaryButton}" Width="140"
+                Canvas.Left="18" Canvas.Top="612" />
+        <TextBlock Text="Play a video, then drag Delay until the two headphones line up."
+                   Style="{StaticResource CaptionText}" Width="420" Canvas.Left="174" Canvas.Top="626" />
+    </Canvas>
+</Window>

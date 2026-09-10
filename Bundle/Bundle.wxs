@@ -32,7 +32,7 @@
   -->
   <Bundle Name="WinSync"
           Manufacturer="Ashfak Nawshad"
-          Version="1.0.8.0"
+          Version="1.1.0.0"
           UpgradeCode="d286c4a0-1bc6-4336-be79-0698b63b20ea"
           IconSourceFile="..\Assets\winsync.ico">
 

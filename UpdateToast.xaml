@@ -1,0 +1,19 @@
+<Window x:Class="WinSync.UpdateToast"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Update available" Width="320" Height="156"
+        WindowStyle="None" AllowsTransparency="True" Background="Transparent"
+        ShowInTaskbar="False" Topmost="True" WindowStartupLocation="Manual"
+        SnapsToDevicePixels="True" UseLayoutRounding="True">
+    <Border Style="{StaticResource CardStyle}">
+        <Canvas>
+            <TextBlock Text="Update available" Style="{StaticResource TitleText}" Canvas.Left="18" Canvas.Top="16" />
+            <TextBlock x:Name="BodyText" Style="{StaticResource CaptionText}" Width="284" Canvas.Left="18" Canvas.Top="42" />
+
+            <Button x:Name="BtnUpdate" Content="Update Now" Style="{StaticResource PrimaryButton}"
+                    Width="130" Height="32" Canvas.Left="18" Canvas.Top="104" />
+            <Button x:Name="BtnLater" Content="Later" Style="{StaticResource SecondaryButton}"
+                    Width="90" Height="32" Canvas.Left="156" Canvas.Top="104" />
+        </Canvas>
+    </Border>
+</Window>

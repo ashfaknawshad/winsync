@@ -3,6 +3,11 @@
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
     <TargetFramework>net8.0-windows</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <!-- Kept alongside WPF only for System.Windows.Forms.NotifyIcon — WPF has no
+         tray-icon control of its own, and referencing WinForms just for this is
+         the standard, well-trodden way to do it. Nothing else in the app uses
+         WinForms anymore. -->
     <UseWindowsForms>true</UseWindowsForms>
     <Nullable>disable</Nullable>
     <ImplicitUsings>disable</ImplicitUsings>
@@ -11,13 +16,15 @@
     <RootNamespace>WinSync</RootNamespace>
     <PlatformTarget>x64</PlatformTarget>
     <ApplicationIcon>Assets\winsync.ico</ApplicationIcon>
-    <ApplicationHighDpiMode>PerMonitorV2</ApplicationHighDpiMode>
+    <!-- WPF is DPI-aware by default (PerMonitorV2-equivalent) with no extra
+         property needed — unlike WinForms, which needed ApplicationHighDpiMode
+         set explicitly. -->
 
     <Product>WinSync</Product>
     <AssemblyTitle>WinSync</AssemblyTitle>
     <Description>Play the same system audio through two headphones on Windows, with per-device delay and drift correction.</Description>
-    <Version>1.0.8</Version>
-    <FileVersion>1.0.8.0</FileVersion>
+    <Version>1.1.0</Version>
+    <FileVersion>1.1.0.0</FileVersion>
   </PropertyGroup>
 
   <!--
@@ -34,12 +41,11 @@
     <PackageReference Include="NAudio" Version="2.2.1" />
   </ItemGroup>
 
-  <!-- Baked into the exe so the in-app Help dialog (HelpDialog.cs) has no loose
-       files to ship or find at runtime. -->
+  <!-- WPF's own resource system (pack URIs), replacing the old EmbeddedResource +
+       GetManifestResourceStream approach — baked into the exe either way, no
+       loose file to ship. -->
   <ItemGroup>
-    <EmbeddedResource Include="Assets\sound-output-panel.png">
-      <LogicalName>WinSync.SoundOutputPanel.png</LogicalName>
-    </EmbeddedResource>
+    <Resource Include="Assets\sound-output-panel.png" />
   </ItemGroup>
 
 </Project>

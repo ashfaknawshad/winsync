@@ -1,0 +1,48 @@
+<Window x:Class="WinSync.HelpDialog"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="How to use WinSync" Width="420" Height="600"
+        WindowStyle="None" AllowsTransparency="True" Background="Transparent"
+        ShowInTaskbar="False" Topmost="True" WindowStartupLocation="Manual"
+        SnapsToDevicePixels="True" UseLayoutRounding="True">
+    <Border Style="{StaticResource CardStyle}">
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="54" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+
+            <TextBlock Text="How to use WinSync" Style="{StaticResource TitleText}"
+                       Margin="20,18,0,0" HorizontalAlignment="Left" VerticalAlignment="Top" />
+            <Button x:Name="BtnClose" Content="&#x2715;" Style="{StaticResource IconButton}"
+                    Width="30" Height="28" Margin="0,16,18,0" HorizontalAlignment="Right" VerticalAlignment="Top" />
+
+            <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" Padding="20,4,20,20">
+                <StackPanel>
+                    <TextBlock Style="{StaticResource BodyText}" TextWrapping="Wrap" Margin="0,0,0,12"
+                               Text="1. Connect both headphones or speakers to your PC." />
+                    <TextBlock Style="{StaticResource BodyText}" TextWrapping="Wrap" Margin="0,0,0,12"
+                               Text="2. In Windows' Sound settings, set your slowest device (usually Bluetooth) as the default output." />
+
+                    <Border Background="{StaticResource ControlBgBrush}" CornerRadius="8" Margin="0,0,0,16"
+                            Width="260" HorizontalAlignment="Left" ClipToBounds="True">
+                        <Image x:Name="SoundOutputImage" Stretch="Uniform" />
+                    </Border>
+
+                    <TextBlock Style="{StaticResource BodyText}" TextWrapping="Wrap" Margin="0,0,0,12"
+                               Text="3. In WinSync, set Device 1 to that same device. It's already playing — no delay slider needed for it." />
+                    <TextBlock Style="{StaticResource BodyText}" TextWrapping="Wrap" Margin="0,0,0,12"
+                               Text="4. Turn on Device 2, set it to your other headphone or speaker, and press Start." />
+                    <TextBlock Style="{StaticResource BodyText}" TextWrapping="Wrap" Margin="0,0,0,12"
+                               Text="5. Play a video, then drag Device 2's Delay slider until both headphones line up — usually 120–250ms for Bluetooth." />
+                    <TextBlock Style="{StaticResource CaptionText}" Margin="0,0,0,16"
+                               Text="Got a third device? Device 3 works exactly the same way as Device 2." />
+
+                    <TextBlock x:Name="LinkText" Text="Full guide with more screenshots →"
+                               Foreground="{StaticResource AccentBrush}" FontFamily="{StaticResource AppFont}"
+                               FontSize="12" FontWeight="Bold" Cursor="Hand" />
+                </StackPanel>
+            </ScrollViewer>
+        </Grid>
+    </Border>
+</Window>
