@@ -129,23 +129,30 @@ comes back empty — see the comments in
 
 **Wired + Bluetooth (the common case):**
 
+WinSync's window numbers your devices 1, 2 (and optionally 3). **Device 1 is
+already playing** — it's whatever Windows' default output is, with no delay
+control of its own. Device 2 and 3 are mirrored copies you can delay and
+adjust independently. (Easy to miss at first: Device 1 counts as one of your
+two headphones — you don't need to also turn on Device 2 *and* a phantom
+third one to get two headphones working.)
+
 1. Connect both headphones.
 2. Set the **Bluetooth** headphone as the Windows default output (Win+Ctrl+V,
    or Settings → System → Sound). VLC and Chrome will follow it.
-3. In WinSync, set **Tap device** to that same Bluetooth headphone.
-4. Set **Output 1** to the wired headphone.
-5. Press **Start**, play a video, and drag the Output 1 **Delay** slider until
+3. In WinSync, set **Device 1** to that same Bluetooth headphone.
+4. Turn on **Device 2**, and set it to the wired headphone.
+5. Press **Start**, play a video, and drag Device 2's **Delay** slider until
    the two headphones line up. Typical landing spot is 120–250ms.
 
 The delay depends on the Bluetooth codec in use, so it varies per headset —
 but it's stable for a given one. Worth writing down once you find it.
 
-**Two wired headphones, or perfect symmetry:** the tap device plays with no
-added delay while mirrored outputs sit ~90ms behind, so two wired headphones
-alone will drift out of step with each other. Fix: tap a device nobody
-listens to — [VB-Cable](https://vb-audio.com/Cable/)'s CABLE Input, an unused
-HDMI/SPDIF endpoint, or a spare USB audio dongle — so both real headphones are
-mirrored outputs with independent sliders.
+**Two wired headphones, or perfect symmetry:** Device 1 plays with no added
+delay while the mirrored devices sit ~90ms behind, so two wired headphones
+alone will drift out of step with each other. Fix: make Device 1 something
+nobody listens to — [VB-Cable](https://vb-audio.com/Cable/)'s CABLE Input, an
+unused HDMI/SPDIF endpoint, or a spare USB audio dongle — so both real
+headphones are mirrored devices with independent sliders.
 
 ## Known limitations
 

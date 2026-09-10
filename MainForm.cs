@@ -62,18 +62,19 @@ namespace WinSync
         private readonly Label lblSubtitle = new Label { Text = "Mirror your system audio to two headphones, perfectly in sync.", Font = Theme.Sans(9f), ForeColor = Theme.TextSecondary, AutoSize = true };
 
         private readonly MacButton btnCheckUpdate = new MacButton { Text = "Check for Updates", Primary = false, Width = 150, Height = 26 };
+        private readonly MacButton btnHelp = new MacButton { Text = "?", Primary = false, Width = 26, Height = 26 };
 
-        private readonly Card sourceCard = new Card { Size = new Size(584, 108) };
-        private readonly Label lblSourceCaption = new Label { Text = "TAP DEVICE", Font = Theme.Sans(9f, FontStyle.Bold), ForeColor = Theme.TextSecondary, AutoSize = true };
-        private readonly Label lblSourceHint = new Label { Text = "Pick your slowest device (usually Bluetooth) and set it as the Windows default output.", Font = Theme.Sans(9f), ForeColor = Theme.TextSecondary, AutoSize = false, Width = 480, Height = 32 };
+        private readonly Card sourceCard = new Card { Size = new Size(584, 128) };
+        private readonly Label lblSourceCaption = new Label { Text = "DEVICE 1 · ALREADY PLAYING", Font = Theme.Sans(9f, FontStyle.Bold), ForeColor = Theme.TextSecondary, AutoSize = true };
+        private readonly Label lblSourceHint = new Label { Text = "This counts as one of your headphones — no delay slider needed here. Pick your slowest device (usually Bluetooth) and set it as the Windows default output.", Font = Theme.Sans(9f), ForeColor = Theme.TextSecondary, AutoSize = false, Width = 500, Height = 48 };
         private readonly MacComboBox cbSource = new MacComboBox { Width = 400 };
         private readonly MacButton btnRefresh = new MacButton { Text = "Refresh", Primary = false, Width = 90, Height = 30 };
 
         private readonly MacButton btnStart = new MacButton { Text = "Start", Primary = true, Width = 140, Height = 40 };
         private readonly Label lblHint = new Label { AutoSize = true, ForeColor = Theme.TextSecondary, Font = Theme.Sans(9f) };
 
-        private readonly OutputRow row1 = new OutputRow("Output 1");
-        private readonly OutputRow row2 = new OutputRow("Output 2");
+        private readonly OutputRow row1 = new OutputRow("Device 2");
+        private readonly OutputRow row2 = new OutputRow("Device 3 (optional)");
         private readonly Timer uiTimer = new Timer { Interval = 400 };
 
         private readonly NotifyIcon trayIcon = new NotifyIcon();
@@ -91,7 +92,7 @@ namespace WinSync
             AutoScaleMode = AutoScaleMode.None;
 
             Text = "WinSync";
-            ClientSize = new Size(620, 640);
+            ClientSize = new Size(620, 660);
             FormBorderStyle = FormBorderStyle.FixedSingle;
             MaximizeBox = false;
             BackColor = Theme.WindowBg;
@@ -112,6 +113,7 @@ namespace WinSync
             appIcon.Location = new Point(18, 18);
             lblTitle.Location = new Point(68, 18);
             lblSubtitle.Location = new Point(68, 50);
+            btnHelp.Location = new Point(418, 26);
             btnCheckUpdate.Location = new Point(452, 26);
 
             sourceCard.Location = new Point(18, 78);
@@ -121,15 +123,16 @@ namespace WinSync
             lblSourceHint.Location = new Point(18, 72);
             sourceCard.Controls.AddRange(new Control[] { lblSourceCaption, cbSource, btnRefresh, lblSourceHint });
 
-            row1.Location = new Point(18, 196);
-            row2.Location = new Point(18, 372);
+            row1.Location = new Point(18, 216);
+            row2.Location = new Point(18, 392);
 
-            btnStart.Location = new Point(18, 560);
-            lblHint.Location = new Point(174, 572);
+            btnStart.Location = new Point(18, 580);
+            lblHint.Location = new Point(174, 592);
             lblHint.Text = "Play a video, then drag Delay until the two headphones line up.";
 
-            Controls.AddRange(new Control[] { appIcon, lblTitle, lblSubtitle, btnCheckUpdate, sourceCard, row1, row2, btnStart, lblHint });
+            Controls.AddRange(new Control[] { appIcon, lblTitle, lblSubtitle, btnHelp, btnCheckUpdate, sourceCard, row1, row2, btnStart, lblHint });
 
+            btnHelp.Click += (s, e) => new HelpDialog().ShowNear(this);
             btnCheckUpdate.Click += (s, e) => _ = CheckForUpdatesAsync(manual: true);
             btnRefresh.Click += (s, e) => LoadDevices();
             btnStart.Click += (s, e) => Toggle();

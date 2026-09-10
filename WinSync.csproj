@@ -16,8 +16,8 @@
     <Product>WinSync</Product>
     <AssemblyTitle>WinSync</AssemblyTitle>
     <Description>Play the same system audio through two headphones on Windows, with per-device delay and drift correction.</Description>
-    <Version>1.0.5</Version>
-    <FileVersion>1.0.5.0</FileVersion>
+    <Version>1.0.6</Version>
+    <FileVersion>1.0.6.0</FileVersion>
   </PropertyGroup>
 
   <!--
@@ -32,6 +32,14 @@
 
   <ItemGroup>
     <PackageReference Include="NAudio" Version="2.2.1" />
+  </ItemGroup>
+
+  <!-- Baked into the exe so the in-app Help dialog (HelpDialog.cs) has no loose
+       files to ship or find at runtime. -->
+  <ItemGroup>
+    <EmbeddedResource Include="Assets\sound-output-panel.png">
+      <LogicalName>WinSync.SoundOutputPanel.png</LogicalName>
+    </EmbeddedResource>
   </ItemGroup>
 
 </Project>

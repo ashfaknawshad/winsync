@@ -103,13 +103,37 @@
 
 <section class="block">
   <h2>Get started</h2>
-  <p class="lede">Wired + Bluetooth setup, the most common case:</p>
+  <p class="lede">Wired + Bluetooth is the most common setup:</p>
   <pre><code>1. Connect both headphones.
-2. Set the Bluetooth headphone as the Windows default output.
-3. In WinSync, set Tap device to that same Bluetooth headphone.
-4. Set Output 1 to the wired headphone.
-5. Press Start, play a video, drag Delay until they line up (usually 120–250ms).</code></pre>
-  <p class="lede">Full instructions, known limitations and troubleshooting are in the <a href="https://github.com/ashfaknawshad/winsync#readme">README</a>.</p>
+2. Set your slowest device (usually Bluetooth) as the Windows default output — see below.
+3. In WinSync, set Device 1 to that same device. It's already playing — no delay needed there.
+4. Turn on Device 2, set it to your other headphone, and press Start.
+5. Play a video, then drag Device 2's Delay slider until they line up (usually 120–250ms for Bluetooth).</code></pre>
+
+  <p class="lede" style="margin-top:32px;">Setting the default output device (step 2):</p>
+  <div class="steps">
+    <div class="step">
+      <img src="/volume-flyout.png" alt="Windows volume flyout showing brightness and volume sliders">
+      <div class="step-body">
+        <span class="step-num">1</span><h4>Click the speaker icon</h4>
+        <p>In the taskbar, next to the clock.</p>
+      </div>
+    </div>
+    <div class="step">
+      <img src="/sound-output-panel.png" alt="Windows Sound output panel listing available devices, one selected">
+      <div class="step-body">
+        <span class="step-num">2</span><h4>Pick your slowest device</h4>
+        <p>Click the small arrow next to the speaker icon, then choose it from the list.</p>
+      </div>
+    </div>
+  </div>
+
+  <p class="lede" style="margin-top:24px;">
+    A quick reminder built into WinSync itself: the <strong>?</strong> button next to
+    "Check for Updates" opens this same guide inside the app.
+    Full instructions, known limitations and troubleshooting are in the
+    <a href="https://github.com/ashfaknawshad/winsync#readme">README</a>.
+  </p>
 </section>
 
 <section class="block" id="smartscreen">
