@@ -8,9 +8,13 @@ namespace WinSync
 {
     /// <summary>A small borderless "update available" toast, shown near the main window
     /// on every launch while a newer release exists. Doesn't block or resize MainForm.
-    /// "Update Now" installs silently and relaunches — no browser, no manual install —
-    /// when the release has an .msi asset; otherwise falls back to opening the download
-    /// page, same as before.</summary>
+    /// "Update Now" downloads the installer and launches it — no separate browser tab,
+    /// no hunting through Downloads for the file — but does show the installer's own
+    /// few-click UI rather than updating invisibly in the background. (An earlier,
+    /// fully-silent version of this used a hidden script to reinstall — see
+    /// UpdateChecker.InstallUpdate for why that turned out to be a real problem on an
+    /// unsigned app.) Falls back to opening the release page if the release has no
+    /// WinSync-Setup.exe asset for some reason, or if the download/launch fails.</summary>
     public sealed class UpdateToast : Form
     {
         private readonly UpdateInfo info;
@@ -78,13 +82,13 @@ namespace WinSync
             try
             {
                 btnUpdate.Text = "Downloading…";
-                string msiPath = await UpdateChecker.DownloadUpdateAsync(info);
+                string installerPath = await UpdateChecker.DownloadUpdateAsync(info);
 
-                btnUpdate.Text = "Installing…";
-                body.Text = "WinSync will restart in a moment.";
+                btnUpdate.Text = "Opening installer…";
+                body.Text = "Click through the installer that just opened — WinSync will close now to let it update.";
 
                 beforeExit?.Invoke();
-                UpdateChecker.InstallUpdateAndRestart(msiPath); // exits the process
+                UpdateChecker.InstallUpdate(installerPath); // exits the process
             }
             catch
             {

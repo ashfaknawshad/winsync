@@ -13,10 +13,10 @@ namespace WinSync
         public Version Version;
         public string TagName;
         public string HtmlUrl;
-        public string DownloadUrl; // direct .msi asset if the release has one, else the release page
+        public string DownloadUrl; // WinSync-Setup.exe (the bootstrapper) if the release has one, else the release page
 
         public bool CanSelfUpdate =>
-            !string.IsNullOrEmpty(DownloadUrl) && DownloadUrl.EndsWith(".msi", StringComparison.OrdinalIgnoreCase);
+            !string.IsNullOrEmpty(DownloadUrl) && DownloadUrl.EndsWith("WinSync-Setup.exe", StringComparison.OrdinalIgnoreCase);
     }
 
     /// <summary>Result of an update check: distinguishes "checked, none available"
@@ -28,7 +28,7 @@ namespace WinSync
         public UpdateInfo Update; // null if up to date, or if Success is false
     }
 
-    /// <summary>Checks GitHub Releases for a newer version, and can silently install one.</summary>
+    /// <summary>Checks GitHub Releases for a newer version, and can fetch an installer for it.</summary>
     public static class UpdateChecker
     {
         private const string ApiUrl = "https://api.github.com/repos/ashfaknawshad/winsync/releases/latest";
@@ -62,13 +62,23 @@ namespace WinSync
                 var currentVersion = Assembly.GetExecutingAssembly().GetName().Version ?? new Version(0, 0, 0, 0);
                 if (remoteVersion <= currentVersion) return new UpdateCheckResult { Success = true, Update = null };
 
+                // Prefer the bootstrapper (WinSync-Setup.exe) — it's what most installs
+                // came from, and it's the one that correctly supersedes a prior install
+                // of itself. Downloading and silently re-running the wrapped .msi
+                // directly used to be the self-update path, but that leaves the
+                // bootstrapper's own Add/Remove Programs entry orphaned (it's a
+                // separate product from Windows' point of view, with its own
+                // UpgradeCode) — pointing at files a same-UpgradeCode .msi upgrade
+                // already swapped out from under it. Confirmed from a real report:
+                // two "WinSync" entries in Installed Apps after using that path, and
+                // neither one launching.
                 string downloadUrl = htmlUrl;
                 if (root.TryGetProperty("assets", out var assets))
                 {
                     foreach (var asset in assets.EnumerateArray())
                     {
                         var name = asset.TryGetProperty("name", out var n) ? n.GetString() : null;
-                        if (name != null && name.EndsWith(".msi", StringComparison.OrdinalIgnoreCase))
+                        if (string.Equals(name, "WinSync-Setup.exe", StringComparison.OrdinalIgnoreCase))
                         {
                             downloadUrl = asset.GetProperty("browser_download_url").GetString();
                             break;
@@ -94,10 +104,10 @@ namespace WinSync
             }
         }
 
-        /// <summary>Downloads the update's .msi to a temp file and returns its path.</summary>
+        /// <summary>Downloads the update's installer to a temp file and returns its path.</summary>
         public static async Task<string> DownloadUpdateAsync(UpdateInfo info)
         {
-            string path = Path.Combine(Path.GetTempPath(), "WinSync-Update.msi");
+            string path = Path.Combine(Path.GetTempPath(), "WinSync-Setup-Update.exe");
             using var http = new HttpClient { Timeout = TimeSpan.FromMinutes(3) };
             http.DefaultRequestHeaders.UserAgent.ParseAdd("WinSync-UpdateChecker");
             using var resp = await http.GetAsync(info.DownloadUrl);
@@ -108,35 +118,24 @@ namespace WinSync
         }
 
         /// <summary>
-        /// Installs the downloaded MSI silently and relaunches WinSync — like Telegram's
-        /// "restart to update", not a browser download + manual double-click. Runs
-        /// msiexec from a short detached script rather than directly, because the MSI
-        /// needs to overwrite WinSync.exe, which Windows won't allow while this process
-        /// still has it open; a couple of seconds' delay in the script gives this
-        /// process time to actually exit first. Ends by terminating this process
-        /// (Environment.Exit, not Application.Exit — this class has no WinForms
-        /// dependency, and a hard exit is exactly what's needed here to drop the file
-        /// lock immediately rather than wait on the message loop).
+        /// Launches the downloaded bootstrapper's own normal install UI (license,
+        /// progress, finish/launch — the same few clicks as installing fresh) and
+        /// exits this process so it isn't holding WinSync.exe open when the installer
+        /// gets to it.
+        ///
+        /// This used to run msiexec /qn from a hidden cmd.exe script instead, fully
+        /// silent. That's exactly the process pattern (unsigned app quietly spawns a
+        /// shell that silently installs something) Windows Defender and similar
+        /// commonly flag or kill on an unsigned binary — WinSync isn't signed yet
+        /// (see SIGNING.md) — and a real report showed it breaking mid-install,
+        /// leaving two conflicting registrations behind. Showing the installer's own
+        /// UI trades a few seconds of visible clicking for not silently doing
+        /// something that looks, to antivirus software, indistinguishable from
+        /// malware installing a payload.
         /// </summary>
-        public static void InstallUpdateAndRestart(string msiPath)
+        public static void InstallUpdate(string installerPath)
         {
-            string exePath = Path.Combine(
-                Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-                "WinSync", "WinSync.exe");
-
-            string script =
-                "/c timeout /t 2 /nobreak >nul & " +
-                $"msiexec /i \"{msiPath}\" /qn & " +
-                $"start \"\" \"{exePath}\" & " +
-                $"del \"{msiPath}\"";
-
-            Process.Start(new ProcessStartInfo("cmd.exe", script)
-            {
-                UseShellExecute = false,
-                CreateNoWindow = true,
-                WindowStyle = ProcessWindowStyle.Hidden
-            });
-
+            Process.Start(new ProcessStartInfo(installerPath) { UseShellExecute = true });
             Environment.Exit(0);
         }
     }
