@@ -154,8 +154,10 @@ Both listeners now hear the same instant. The generalised rule:
 
 ## 5. Implementation
 
-The tool is a .NET 8 WinForms application (~450 lines) using the NAudio library
-for WASAPI access.
+The tool is a .NET 8 WPF application (~1,450 lines of C# and XAML) using the
+NAudio library for WASAPI access. It began as WinForms and was ported to WPF for
+sharper, DirectX-rendered visuals; WinForms is still referenced, but only for
+`NotifyIcon`, since WPF has no tray-icon control of its own.
 
 ### 5.1 Signal chain
 
@@ -243,6 +245,8 @@ Tested with VLC and Chrome on Windows 11.
   be recorded once per pair of headphones.
 - No audible drift or clicking over extended playback.
 - Startup requires no administrator rights and installs nothing.
+- Minimising sends the window to the system tray, where mirroring continues
+  in the background.
 
 ---
 
@@ -264,7 +268,6 @@ Tested with VLC and Chrome on Windows 11.
 - **Saved presets** — store the tuned delay per headphone pair, keyed on device ID.
 - **Global hotkeys** — nudge delay ±10ms while a video is playing, without
   alt-tabbing away.
-- **Tray operation** — run minimised rather than as a visible window.
 - **Automatic latency estimation** — measure round-trip delay by emitting an
   inaudible marker and correlating, removing the manual tuning step.
 - **More than two outputs** — the architecture already supports N devices; only
@@ -294,8 +297,8 @@ by dropping samples.
 
 1. Connect both headphones.
 2. Set the **Bluetooth** headphone as the Windows default output.
-3. Tap device → the Bluetooth headphone.
-4. Output 1 → the wired headphone.
+3. Device 1 (the tap) → the Bluetooth headphone.
+4. Device 2 (mirrored) → the wired headphone.
 5. Start, play a video, raise the delay slider until the two align.
 
 **Key APIs**

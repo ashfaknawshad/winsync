@@ -169,7 +169,7 @@ headphones are mirrored devices with independent sliders.
 
 - [ ] Saved presets, keyed on device ID
 - [ ] Global hotkeys to nudge delay without alt-tabbing
-- [ ] Tray/minimized operation
+- [x] Tray/minimized operation
 - [ ] Automatic latency estimation (correlated marker instead of manual tuning)
 - [ ] Third+ output (the engine already supports N; only the UI is fixed at two)
 
@@ -178,8 +178,11 @@ headphones are mirrored devices with independent sliders.
 Issues and PRs welcome. The codebase is small on purpose:
 
 - [`AudioMirror.cs`](AudioMirror.cs) — the audio engine (capture, resample/drift, mirror targets)
-- [`MainForm.cs`](MainForm.cs) / [`Controls.cs`](Controls.cs) — the UI
-- [`Program.cs`](Program.cs) — entry point
+- [`MainWindow.xaml`](MainWindow.xaml) / [`.xaml.cs`](MainWindow.xaml.cs) — the main window
+- [`OutputRowControl.xaml`](OutputRowControl.xaml) / [`.xaml.cs`](OutputRowControl.xaml.cs) — one mirrored-output card
+- [`Theme.xaml`](Theme.xaml) — the shared style system (colors, buttons, sliders, cards)
+- [`UpdateChecker.cs`](UpdateChecker.cs) — GitHub Releases check and self-update
+- [`App.xaml`](App.xaml) / [`.xaml.cs`](App.xaml.cs) — entry point
 
 ## License
 
